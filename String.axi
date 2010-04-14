@@ -1,4 +1,7 @@
-/* The contents of this file are subject to the Mozilla Public License Version
+PROGRAM_NAME='String'
+
+/**
+ * The contents of this file are subject to the Mozilla Public License Version
  * 1.1 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
  * http://www.mozilla.org/MPL/
@@ -18,16 +21,20 @@
  *
  * Contributor(s):
  * 	Kim Burgess <kim.burgess@justice.qld.gov.au>
+ *	true <amx at trueserve dot org>
  *
+ * $Id$
+ * tab-width: 8, indent: 4, columns: 80
  */
-PROGRAM_NAME='String'
+
+#if_not_defined __STRING_LIB
+#define __STRING_LIB
 
 
-DEFINE_VARIABLE
-
-constant STRING_RETURN_SIZE_LIMIT = 1024	// Maximum string return size
-						// for string manipulation
-						// functions.
+define_constant
+STRING_RETURN_SIZE_LIMIT	= 1024	// Maximum string return size
+					// for string manipulation
+					// functions.
 
 
 /**
@@ -39,7 +46,7 @@ constant STRING_RETURN_SIZE_LIMIT = 1024	// Maximum string return size
  * caused the error.
  *
  */
-define_function char[STRING_RETURN_SIZE_LIMIT] string_size_error () {
+define_function char[STRING_RETURN_SIZE_LIMIT] string_size_error() {
     // handle, alert, ignore etc here
     send_string 0 , "'Return size to small in String.axi'"
 
@@ -54,128 +61,189 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_size_error () {
  * @param	deliminator	the character string to insert between the imploded elements
  * @return			the imploded string
  */
-define_function char[STRING_RETURN_SIZE_LIMIT] string_implode (char strings[][], char delimiter[]) {
-    stack_var integer index
-    stack_var integer arraySize
-    stack_var char implodedString[STRING_RETURN_SIZE_LIMIT + 1]
+define_function char[STRING_RETURN_SIZE_LIMIT] implode(char strings[][], char delimiter[]) {
+    stack_var integer	i
+    stack_var integer	size
+    stack_var char	ret[STRING_RETURN_SIZE_LIMIT + 1]
 
-    arraySize = length_array(strings)
-    implodedString = strings[1]
+    size = length_array(strings)
+    ret = strings[1]
 
-    if (arraySize > 1) {
-	for (index = arraySize - 1; index; index--) {
-	    implodedString = "implodedString, delimiter, strings[(arraySize - index) + 1]"
+    if (size > 1) {
+	for (i = size - 1; i; i--) {
+	    ret = "ret, delimiter, strings[(size - i) + 1]"
 	}
     }
 
-    if (length_string(implodedString) > STRING_RETURN_SIZE_LIMIT) {
+    if (length_string(ret) > STRING_RETURN_SIZE_LIMIT) {
 	return string_size_error()
     }
 
-    return implodedString
+    return ret
+}
+
+/**
+ * Explodes a string with a char delimiter into an array of string arrays.
+ * Honors quotes; double quoted contents are treated as one segment.
+ * Due to NetLinx bugs, you must specify the length of ret in ret_len if you
+ * want the returned array sanitized.
+ * <p>
+ * TODO: Don't make quoted strings necessary; explode based on a string instead
+ * of a char
+ *
+ * @param	delim		the delimiter to use for the exploding
+ * @param	a		the string array to explode
+ * @param	ret		the returned exploded string array of string arrays
+ * @param	ret_len		the amount of entries in ret[][]; pass 0 if you don't care about sanitizing ret[][]
+ * @return			the amount of entries stuffed into ret[][]
+ */
+define_function integer explode(char delim, char a[], char ret[][], integer ret_len)
+{
+    stack_var integer	i
+    stack_var integer	start
+    stack_var integer	end
+
+    start = 1
+    i = 1
+
+    while (start <= length_string(a)) {
+	if (a[start] == delim) {			// skip delimiter
+	    start++
+	    continue
+	}
+
+	if (a[start] == '"') {				// handle quotes
+	    end = find_string(a, '"', start + 1)
+
+	    ret[i] = mid_string(a, start + 1, (end - start) - 1)
+	    i++
+
+	    start = end + 1
+	    continue
+	}
+
+	end = find_string(a, "delim", start)		// nothing else stopping us?
+							// then seperate by delimiter
+	if (end) {
+	    ret[i] = mid_string(a, start, (end - start))
+	    i++
+
+	    start = end + 1
+	} else {
+	    ret[i] = mid_string(a, start, length_string(a))
+
+	    start = length_string(a) + 1
+	}
+    }
+
+    for (start = i + 1; start <= ret_len; start++) {
+	ret[start] = ''
+    }
+
+    return i
 }
 
 /**
  * Checks to see if the passed character is a printable ascii character.
  *
- * @param	charToTest	the character to check
+ * @param	test		the character to check
  * @return			a boolean value specifying whether it is printable
  */
-define_function char string_is_printable (char charToTest) {
-    return charToTest > $20 && charToTest < $7F
+define_function char char_is_printable(char test) {
+    return test > $20 && test < $7F
 }
 
 /**
  * Checks to see if the passed character is a whitespace character.
  *
- * @param	charToTest	the character to check
+ * @param	test		the character to check
  * @return			a boolean value specifying whether it is a whitepsace character
  */
-define_function char string_is_whitespace (char charToTest) {
-    return (charToTest > $08 && charToTest < $0E) ||
-	(charToTest > $1B && charToTest < $20)
+define_function char char_is_whitespace(char test) {
+    return (test > $08 && test < $0E) ||
+	(test > $1B && test < $20)
 }
 
 /**
- * returns a copy of the string with the left whitespace removed. if no
- * printable characters are found an empty string will be returned.
+ * Returns a copy of the string with the left whitespace removed. If no
+ * printable characters are found, an empty string will be returned.
  *
  * @param	a		a string to trim
  * @return			the original string with left whitespace removed
  */
-define_function char[STRING_RETURN_SIZE_LIMIT] string_ltrim (char a[]) {
-    stack_var integer index
-    stack_var integer length
-    stack_var char trimmed[STRING_RETURN_SIZE_LIMIT + 1]
+define_function char[STRING_RETURN_SIZE_LIMIT] ltrim(char a[]) {
+    stack_var integer	i
+    stack_var integer	len
+    stack_var char	ret[STRING_RETURN_SIZE_LIMIT + 1]
 
-    length = length_string(a)
+    len = length_string(a)
 
-    for (index = length; index; index--) {
-	if (!string_is_whitespace(a[(length + 1) - index])) {
-	    trimmed = right_string(a, (length + 1) - index)
-	    if (length_string(trimmed) > STRING_RETURN_SIZE_LIMIT) {
+    for (i = len; i; i--) {
+	if (!char_is_whitespace(a[(len + 1) - i])) {
+	    ret = right_string(a, (len + 1) - i)
+	    if (length_string(ret) > STRING_RETURN_SIZE_LIMIT) {
 		return string_size_error()
 	    } else {
-		return trimmed
+		return ret
 	    }
 	}
     }
 }
 
 /**
- * returns a copy of the string with the right whitespace removed. if no
- * printable characters are found an empty string will be returned.
+ * Returns a copy of the string with the right whitespace removed. If no
+ * printable characters are found, an empty string will be returned.
  *
  * @param	a		the string to trim
  * @return			the string with right whitespace removed
  */
-define_function char[STRING_RETURN_SIZE_LIMIT] string_rtrim (char a[]) {
-    stack_var integer index
+define_function char[STRING_RETURN_SIZE_LIMIT] rtrim(char a[]) {
+    stack_var integer	i
 
-    for (index = length_string(a); index; index--) {
-	if (!string_is_whitespace(a[index])) {
-	    if (index > STRING_RETURN_SIZE_LIMIT) {
+    for (i = length_string(a); i; i--) {
+	if (!char_is_whitespace(a[i])) {
+	    if (i > STRING_RETURN_SIZE_LIMIT) {
 		return string_size_error()
 	    } else {
-		return left_string(a, index)
+		return left_string(a, i)
 	    }
 	}
     }
 }
 
 /**
- * returns a copy of the string with the whitespace removed. if no  printable
- * characters are found an empty string will be returned.
+ * Returns a copy of the string with the whitespace removed. If no printable
+ * characters are found, an empty string will be returned.
  *
  * @param	a		a string to trim
  * @return			the original string with whitespace removed
  */
-define_function char[STRING_RETURN_SIZE_LIMIT] string_trim (char a[]) {
-    stack_var integer index
-    stack_var integer length
-    stack_var integer startIndex
-    stack_var integer endIndex
-    stack_var integer returnLength
+define_function char[STRING_RETURN_SIZE_LIMIT] trim(char a[]) {
+    stack_var integer	i
+    stack_var integer	len
+    stack_var integer	start
+    stack_var integer	end
+    stack_var integer	returnlen
 
-    length = length_string(a)
-						// We could just ltrim() and rtrim() however
-    for (index = length; index; index--) {	// this should speed things up as the loop
-	if (!startIndex) {			// only needs to execute once.
-	    if (!string_is_whitespace(a[(length + 1) - index])) {
-		startIndex = (length + 1) - index
+    len = length_string(a)
+					// We could just ltrim() and rtrim(),
+    for (i = len; i; i--) {		// however this should be faster as the
+	if (!start) {			// loop only needs to execute once.
+	    if (!char_is_whitespace(a[(len + 1) - i])) {
+		start = (len + 1) - i
 	    }
 	}
-	if (!endIndex) {
-	    if (!string_is_whitespace(a[index])) {
-		endIndex = index + 1
+	if (!end) {
+	    if (!char_is_whitespace(a[i])) {
+		end = i + 1
 	    }
 	}
-	if (startIndex && endIndex) {
-	    returnLength = endIndex - startIndex
-	    if (returnLength > STRING_RETURN_SIZE_LIMIT) {
+	if (start && end) {
+	    returnlen = end - start
+	    if (returnlen > STRING_RETURN_SIZE_LIMIT) {
 		return string_size_error()
 	    } else {
-		return mid_string(a, startIndex, returnLength)
+		return mid_string(a, start, returnlen)
 	    }
 	}
     }
@@ -187,11 +255,11 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_trim (char a[]) {
  * @param	boolean		a boolean value to convert
  * @return			a string equivalent
  */
-define_function char[3] string_from_boolean (char boolean) {
-    switch (boolean) {
-	case TRUE: return 'ON'
-	case FALSE: return 'OFF'
+define_function char[3] boolean_to_string(char boolean) {
+    if (boolean) {
+	return 'ON'
     }
+    return 'OFF'
 }
 
 /**
@@ -201,14 +269,16 @@ define_function char[3] string_from_boolean (char boolean) {
  * @param	a		a string representing a boolean value
  * @return			a boolean value equivalent
  */
-define_function char string_to_boolean (char a[]) {
-    stack_var char temp[32]
-    temp = lower_string(string_trim(a))
+define_function char string_to_boolean(char a[]) {
+    stack_var char	temp[32]
+    
+    temp = lower_string(trim(a))
     if (temp == 'on' ||
 	temp == 'true' ||
 	temp == 'yes' ||
 	temp == 'y' ||
 	temp == '1') {
+	
 	return TRUE
     } else {
 	return FALSE
@@ -221,23 +291,23 @@ define_function char string_to_boolean (char a[]) {
  * @param	ints		am intger array of values to 'listify'
  * @return			a string list of the values
  */
-define_function char[STRING_RETURN_SIZE_LIMIT] string_from_int_array (integer ints[]) {
-    stack_var integer index
-    stack_var integer arraySize
-    stack_var integer returnLength
-    stack_var integer item
-    stack_var char list[STRING_RETURN_SIZE_LIMIT]
+define_function char[STRING_RETURN_SIZE_LIMIT] int_array_to_string(integer ints[]) {
+    stack_var integer	i
+    stack_var integer	size
+    stack_var integer	returnlen
+    stack_var integer	item
+    stack_var char	list[STRING_RETURN_SIZE_LIMIT]
 
-    arraySize = length_array(ints)
+    size = length_array(ints)
 
     list = itoa(ints[1])
 
-    if (arraySize > 1) {
-	for (index = arraySize - 1; index; index--) {
-	    item = (arraySize - index) + 1
+    if (size > 1) {
+	for (i = size - 1; i; i--) {
+	    item = (size - i) + 1
 
-	    returnLength = returnLength + length_string(itoa(ints[item]))
-	    if (returnLength > STRING_RETURN_SIZE_LIMIT) {
+	    returnlen = returnlen + length_string(itoa(ints[item]))
+	    if (returnlen > STRING_RETURN_SIZE_LIMIT) {
 		return string_size_error()
 	    }
 
@@ -249,7 +319,7 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_from_int_array (integer in
 }
 
 /**
- * Gets an item from a string list. This can also be used to grab word n within
+ * Gets an item from a string list. This can be used to grab word n within
  * a string by passing 'space' as the delimiter.
  *
  * @param	a		a string to split
@@ -257,52 +327,53 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_from_int_array (integer in
  * @param	item		the item number to return
  * @return			a string array the requested list item
  */
-define_function char[STRING_RETURN_SIZE_LIMIT] string_get_list_item (char a[], char delimiter[], integer item) {
-    stack_var integer currentItem
-    stack_var integer startIndex
-    stack_var integer endIndex
-    stack_var integer returnLength
+define_function char[STRING_RETURN_SIZE_LIMIT] string_get_list_item(char a[], char delimiter[], integer item) {
+    stack_var integer	i
+    stack_var integer	start
+    stack_var integer	end
+    stack_var integer	ret
 
-    for (currentItem = 1; currentItem <= item; currentItem++) {
-	startIndex = endIndex + 1
-	endIndex = find_string(a, delimiter, startIndex)
+    for (i = 1; i <= item; i++) {
+	start = end + 1
+	end = find_string(a, delimiter, start)
     }
 
-    if (!endIndex) {
-	endIndex = length_string(a) + 1
+    if (!end) {
+	end = length_string(a) + 1
     }
 
-    returnLength = endIndex - startIndex
-    if (returnLength > STRING_RETURN_SIZE_LIMIT) {
+    ret = end - start
+    if (ret > STRING_RETURN_SIZE_LIMIT) {
 	return string_size_error()
     } else {
-	return mid_string(a, startIndex, returnLength)
+	return mid_string(a, start, ret)
     }
 }
 
 /**
- * Gets the key from a key/value pair string with the specified delimiter.
+ * Gets the key from a single key/value pair string with the specified
+ * delimiter.
  *
  * @param	a		a string containing a key/value pair
  * @param	delimiter	the character string which divides the key and value
  * @return			a string containing the key component
  */
-define_function char[STRING_RETURN_SIZE_LIMIT] string_get_key (char a[], char delimiter[]) {
-    stack_var integer delimiterPos
-    stack_var integer returnLength
+define_function char[STRING_RETURN_SIZE_LIMIT] string_get_key(char a[], char delimiter[]) {
+    stack_var integer	pos
+    stack_var integer	returnlen
 
-    delimiterPos = find_string(a, delimiter, 1)
+    pos = find_string(a, delimiter, 1)
 
-    if (delimiterPos) {
-	returnLength = delimiterPos - 1
+    if (pos) {
+	returnlen = pos - 1
     } else {
-	returnLength = length_string(a)
+	returnlen = length_string(a)
     }
 
-    if (returnLength > STRING_RETURN_SIZE_LIMIT) {
+    if (returnlen > STRING_RETURN_SIZE_LIMIT) {
 	return string_size_error()
     } else {
-	return left_string(a, returnLength)
+	return left_string(a, returnlen)
     }
 }
 
@@ -313,25 +384,26 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_get_key (char a[], char de
  * @param	delimiter	the character string which divides the key and value
  * @return			a string containing the value component
  */
-define_function char[STRING_RETURN_SIZE_LIMIT] string_get_value (char a[], char delimiter[]) {
-    stack_var integer delimiterPos
-    stack_var integer returnLength
+define_function char[STRING_RETURN_SIZE_LIMIT] string_get_value(char a[], char delimiter[]) {
+    stack_var integer	pos
+    stack_var integer	returnlen
 
-    delimiterPos = find_string(a, delimiter, 1)
+    pos = find_string(a, delimiter, 1)
 
-    returnLength = length_string(a) - (delimiterPos + length_string(delimiter) - 1)
+    returnlen = length_string(a) - (pos + length_string(delimiter) - 1)
 
-    if (returnLength > STRING_RETURN_SIZE_LIMIT) {
+    if (returnlen > STRING_RETURN_SIZE_LIMIT) {
 	return string_size_error()
     } else {
-	return right_string(a, returnLength)
+	return right_string(a, returnlen)
     }
 }
 
 /**
- * Switch the day and month fields of a date string (for coverting between US
+ * Switches the day and month fields of a date string (for coverting between US
  * and international standards). for example 05/28/2009 becomes 28/05/2009.
  *
+ * QUESTION: Should we have a date/time library? Should this be merged with unixtime?
  */
 define_function char[10] string_date_invert(char dateString[]) {
     stack_var integer index
@@ -345,62 +417,105 @@ define_function char[10] string_date_invert(char dateString[]) {
 }
 
 /**
- * Gets the first instance of a string contained within the bounds of the two
- * passed sub strings
+ * Gets the first instance of a string contained within the bounds of two
+ * substrings
  *
  * @param	a		a string to split
- * @param	start		the character sequence marking the left bound
- * @param	end		the character sequence marking the right bound
+ * @param	left		the character sequence marking the left bound
+ * @param	right		the character sequence marking the right bound
  * @return			a string contained within the boundary sequences
  */
-define_function char[STRING_RETURN_SIZE_LIMIT] string_get_contained_string (char a[], char start[], char end[]) {
-    stack_var integer startIndex
-    stack_var integer endIndex
-    stack_var integer returnLength
+define_function char[STRING_RETURN_SIZE_LIMIT] string_get_between(char a[], char left[], char right[]) {
+    stack_var integer	start
+    stack_var integer	end
+    stack_var integer	returnlen
 
-    startIndex = find_string(a, start, 1) + length_string(start)
-    endIndex = find_string(a, end, startIndex)
-    returnLength = endIndex - startIndex
+    start = find_string(a, left, 1) + length_string(left)
+    end = find_string(a, right, start)
+    returnlen = end - start
 
-    if (returnLength > STRING_RETURN_SIZE_LIMIT) {
+    if (returnlen > STRING_RETURN_SIZE_LIMIT) {
 	return string_size_error()
     } else {
-	return mid_string(a, startIndex, returnLength)
+	return mid_string(a, start, returnlen)
     }
 }
 
 
 /**
- * returns a copy of a string with the first alpha character capitalized and
- * all other characters converted to lower case. Non alpha characters are not
- * modified.
+ * Returns a copy of a string with the first alpha character capitalized.
+ * Non alpha characters are not modified. Pass a LOWER_STRING()'d string
+ * to lowercase all other characters.
  *
- * @param	a		a string to capitalize
+ * @param	a		a string to capitalize first characters of
  * @return			a capitalized string
  */
-define_function char[STRING_RETURN_SIZE_LIMIT] string_capitalize (char a[]) {
-    stack_var integer index
-    stack_var integer stringLength
-    stack_var integer charIndex
-    stack_var char temp[STRING_RETURN_SIZE_LIMIT]
+define_function char[STRING_RETURN_SIZE_LIMIT] string_ucfirst(char a[]) {
+    stack_var integer 	i
+    stack_var char	ret[STRING_RETURN_SIZE_LIMIT]
 
-    stringLength = length_string(a)
-
-    if (stringLength > STRING_RETURN_SIZE_LIMIT) {
+    if (length_string(a) > STRING_RETURN_SIZE_LIMIT) {
 	return string_size_error()
     } else {
-	for (index = stringLength; index; index--) {
-	    charIndex = (stringLength - index) + 1
-	    if ((a[charIndex] >= $41 && a[charIndex] <= $5A) ||	// A - Z
-		(a[charIndex] >= $61 && a[charIndex] <= $7A)) {	// a - z
-		break
+	ret = a
+	for (i = 1; i <= length_string(a); i--) {
+	    if (ret[i] >= $61 && a[i] <= $7A) {
+		ret[i] = ret[i] - $20
 	    }
 	}
 
-	temp = lower_string(a)
-
-	temp[charIndex] = temp[charIndex] - $20
-
-	return temp
+	return ret
     }
+}
+
+/**
+ * Returns a string prefixed with a specified value, up to a specified length.
+ * If the string is the same size or is larger than the specified length,
+ * returns the original string.
+ * <p>
+ * TODO: Possibly allow value to be a string?
+ *
+ * @param	a		the string to prefix
+ * @param	value		the value to prefix on the string
+ * @param	len		the requested length of the string
+ * @return			a string prefixed to length len with value
+ */
+define_function char[STRING_RETURN_SIZE_LIMIT] string_prefix_to_length(char a[], char value, integer len)
+{
+    stack_var integer	i
+    stack_var char	work[STRING_RETURN_SIZE_LIMIT]
+
+    if (length_string(a) < len) {
+	for (i = length_string(a); i < len; i++) {
+	    work = "value, work"
+	}
+    }
+
+    return "work, a"
+}
+
+/**
+ * Returns a string suffixed with a specified value, up to a specified length.
+ * If the string is the same size or is larger than the specified length,
+ * returns the original string.
+ * <p>
+ * TODO: Possibly allow value to be a string?
+ *
+ * @param	a		the string to suffix
+ * @param	value		the value to suffix on the string
+ * @param	len		the requested length of the string
+ * @return			a string suffixed to length len with value
+ */
+define_function char[STRING_RETURN_SIZE_LIMIT] string_suffix_to_length(char a[], char value, integer len)
+{
+    stack_var integer	i
+    stack_var char	work[STRING_RETURN_SIZE_LIMIT]
+
+    if (length_string(a) < len) {
+	for (i = length_string(a); i < len; i++) {
+	    work = "value, work"
+	}
+    }
+
+    return "a, work"
 }
