@@ -87,10 +87,8 @@ define_function char[STRING_RETURN_SIZE_LIMIT] implode(char strings[][], char de
  * Honors quotes; double quoted contents are treated as one segment.
  * Due to NetLinx bugs, you must specify the length of ret in ret_len if you
  * want the returned array sanitized.
- * <p>
- * TODO: Don't make quoted strings necessary; explode based on a string instead
- * of a char
  *
+ * @todo			Don't make quoted strings necessary; explode based on a string instead of a char
  * @param	delim		the delimiter to use for the exploding
  * @param	a		the string array to explode
  * @param	ret		the returned exploded string array of string arrays
@@ -271,14 +269,14 @@ define_function char[3] boolean_to_string(char boolean) {
  */
 define_function char string_to_boolean(char a[]) {
     stack_var char	temp[32]
-    
+
     temp = lower_string(trim(a))
     if (temp == 'on' ||
 	temp == 'true' ||
 	temp == 'yes' ||
 	temp == 'y' ||
 	temp == '1') {
-	
+
 	return TRUE
     } else {
 	return FALSE
@@ -451,30 +449,51 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_get_between(char a[], char
  * @return			a capitalized string
  */
 define_function char[STRING_RETURN_SIZE_LIMIT] string_ucfirst(char a[]) {
-    stack_var integer 	i
-    stack_var char	ret[STRING_RETURN_SIZE_LIMIT]
-
     if (length_string(a) > STRING_RETURN_SIZE_LIMIT) {
 	return string_size_error()
-    } else {
-	ret = a
-	for (i = 1; i <= length_string(a); i--) {
-	    if (ret[i] >= $61 && a[i] <= $7A) {
-		ret[i] = ret[i] - $20
+    }
+
+    if (a[1] >= $61 && a[1] <= $7A) {
+	return "a[1] - $20, mid_string(a, 2, STRING_RETURN_SIZE_LIMIT)"
+    }
+    return a
+}
+
+/**
+ * Returns a copy of a string with the first alpha character in each word
+ * capitalized. Non alpha characters are not modified. Pass a
+ * LOWER_STRING()'d string to lowercase all other characters.
+ *
+ * @param	a		a string to capitalize first characters of
+ * @return			a capitalized string
+ */
+define_function char[STRING_RETURN_SIZE_LIMIT] string_ucwords(char a[]) {
+    stack_var integer	i
+    stack_var char	ret[STRING_RETURN_SIZE_LIMIT]
+    
+    if (length_string(a) > STRING_RETURN_SIZE_LIMIT) {
+	return string_size_error()
+    }
+    
+    ret = a
+    
+    for (i = 1; i < length_string(ret); i++) {
+	if (char_is_whitespace(ret[i])) {
+	    if (ret[i + 1] >= $61 && ret[i + 1] <= $7a) {
+		ret[i + 1] = ret[i + 1] - $20
 	    }
 	}
-
-	return ret
     }
+    
+    return ret
 }
 
 /**
  * Returns a string prefixed with a specified value, up to a specified length.
  * If the string is the same size or is larger than the specified length,
  * returns the original string.
- * <p>
- * TODO: Possibly allow value to be a string?
  *
+ * @todo			Possibly allow value to be a string?
  * @param	a		the string to prefix
  * @param	value		the value to prefix on the string
  * @param	len		the requested length of the string
@@ -498,9 +517,8 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_prefix_to_length(char a[],
  * Returns a string suffixed with a specified value, up to a specified length.
  * If the string is the same size or is larger than the specified length,
  * returns the original string.
- * <p>
- * TODO: Possibly allow value to be a string?
  *
+ * @todo			Possibly allow value to be a string?
  * @param	a		the string to suffix
  * @param	value		the value to suffix on the string
  * @param	len		the requested length of the string
