@@ -5,8 +5,6 @@ PROGRAM_NAME='_unixtime_0_0_1'
  * Copyright (c) 2010, true
  * amx at trueserve dot org
  *
- * Release 0.0.1 (rename when stable)
- *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
@@ -75,7 +73,7 @@ integer	UNIXTIME_DAYS_MONTH_OFFSET_YL[12]	= {		// unused, may be used later for 
 	213, 244, 274, 305, 335, 366
 }
 
-UNIXTIME_DAYS_TEXT_3[7][3] 		= {		// fmt_date() stuff
+UNIXTIME_DAYS_TEXT_3[7][3] 					= {		// fmt_date() stuff
 	'Sun',
 	'Mon',
 	'Tue',
@@ -84,7 +82,7 @@ UNIXTIME_DAYS_TEXT_3[7][3] 		= {		// fmt_date() stuff
 	'Fri',
 	'Sat'
 }
-UNIXTIME_DAYS_TEXT_FULL[7][9] 		= {
+UNIXTIME_DAYS_TEXT_FULL[7][9] 				= {
 	'Sunday',
 	'Monday',
 	'Tuesday',
@@ -93,7 +91,7 @@ UNIXTIME_DAYS_TEXT_FULL[7][9] 		= {
 	'Friday',
 	'Saturday'
 }
-UNIXTIME_MONTH_TEXT_3[12][3] 		= {
+UNIXTIME_MONTH_TEXT_3[12][3] 				= {
 	'Jan',
 	'Feb',
 	'Mar',
@@ -107,7 +105,7 @@ UNIXTIME_MONTH_TEXT_3[12][3] 		= {
 	'Nov',
 	'Dec'
 }
-UNIXTIME_MONTH_TEXT_FULL[12][9] 		= {
+UNIXTIME_MONTH_TEXT_FULL[12][9] 			= {
 	'January',
 	'February',
 	'March',
@@ -138,7 +136,7 @@ define_start
 {
 	// sync
 	unixtime_sync_with_clkmgr()
-	
+
 	// check for updates every minute
 	timeline_create(UNIXTIME_TL, unixtime_tl_times, 1, TIMELINE_ABSOLUTE, TIMELINE_REPEAT)
 }
@@ -209,7 +207,7 @@ define_function slong unixtime_offset(char d[10], char t[8], slong offset)
 	stack_var slong work
 
 	/*** DATE ***/
-	work = UNIXTIME_SECONDS_PER_YEAR					
+	work = UNIXTIME_SECONDS_PER_YEAR
 	ret = work * (type_cast(date_to_year(d)) - 1970)			// do years
 
 	work = UNIXTIME_SECONDS_PER_DAY
@@ -296,7 +294,7 @@ define_function char[STRING_RETURN_SIZE_LIMIT] fmt_date(char fmt[1024], slong u)
 {
 	stack_var integer	i
 	stack_var char		ret[STRING_RETURN_SIZE_LIMIT + 1]
-	
+
 	stack_var integer	work
 
 	stack_var char		amx_ldate[10]
@@ -632,9 +630,9 @@ define_function char unixtime_year_is_leapyear(integer year)
 define_function unixtime_sync_with_clkmgr()
 {
 	stack_var char work[10]
-	
+
 	work = clkmgr_get_timezone()
-	
+
 	if (work[4] == '+') {
 		unixtime_utc_offset_hr = atoi(mid_string(work, 5, 2))
 		unixtime_utc_offset_min = atoi(mid_string(work, 8, 2))
