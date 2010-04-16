@@ -159,7 +159,7 @@ define_function char char_is_printable(char test) {
  */
 define_function char char_is_whitespace(char test) {
     return (test > $08 && test < $0E) ||
-	(test > $1B && test < $20)
+	(test > $1B && test < $21)
 }
 
 /**
@@ -470,13 +470,13 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_ucfirst(char a[]) {
 define_function char[STRING_RETURN_SIZE_LIMIT] string_ucwords(char a[]) {
     stack_var integer	i
     stack_var char	ret[STRING_RETURN_SIZE_LIMIT]
-    
+
     if (length_string(a) > STRING_RETURN_SIZE_LIMIT) {
 	return string_size_error()
     }
-    
+
     ret = a
-    
+
     for (i = 1; i < length_string(ret); i++) {
 	if (char_is_whitespace(ret[i])) {
 	    if (ret[i + 1] >= $61 && ret[i + 1] <= $7a) {
@@ -484,7 +484,7 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_ucwords(char a[]) {
 	    }
 	}
     }
-    
+
     return ret
 }
 
