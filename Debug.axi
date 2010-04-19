@@ -76,7 +76,7 @@ define_function debug_set_level(char x) {
  *
  * The diagnostics output is limited to 131 characters per line. If the message
  * to print is longer than this it will wrap into multiple lines, with line
- * breaks inserted at any whitespace found near (character 80 onwards) the end 
+ * breaks inserted at any whitespace found near (character 80 onwards) the end
  * of a line.
  *
  * @param	x		a string containing the message to send
@@ -96,10 +96,10 @@ define_function println(char x[]) {
 			}
 			end--
 		}
-		if (end <= start + 80) {	// No whitespace found
+		if (end <= start + 80) {	// No whitespace found, or short line
 			end = min_value(start + 131, len)
 		}
-		send_string console, mid_string(x, start, end - start)
+		send_string console, mid_string(x, start, (end - start) + 1)
 		start = end
 	}
 }
