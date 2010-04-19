@@ -28,6 +28,10 @@ DEFINE_VARIABLE
 constant double MATH_E = 2.718281828459045
 constant double MATH_PI = 3.141592653589793
 
+// Precision required for processor intensive math functions. If accuracy is
+// not integral to their use this may be increased to improve performance.
+constant double MATH_PRECISION = 1.0e-13
+
 // Psuedo constants for non-normal numbers - these are injected with their
 // relevant bit patterns on boot
 volatile double MATH_NaN
@@ -127,29 +131,35 @@ define_function double math_build_double(long high, long low) {
 }
 
 /**
- * Right shift (>>) a double (passed as two long components) 1 bit.
+ * Right shift (>>) a double 1 bit.
  *
- * NOTE: this will directly manipulate the passed values.
- *
- * @param	high	a long containg bits 63 - 32
- * @param	low	a long containing bits 31 - 0
+ * @param	x		the double to shift
+ * @return			the passed value >> 1
  */
-define_function math_rshift_double(long high, long low) {
-    low = low >> 1 + ((high & 1) << 15)
-    high = high >> 1
+define_function double math_rshift_double(double x) {
+	stack_var long hi
+	stack_var long low
+	hi = math_double_high_to_bits(x)
+	low = math_double_low_to_bits(x)
+    low = low >> 1 + ((hi & 1) << 15)
+    hi = hi >> 1
+	return math_build_double(hi, low)
 }
 
 /**
- * Left shift (<<) a double (passed as two long components) 1 bit.
+ * Left shift (<<) a double 1 bit.
  *
- * NOTE: this will directly manipulate the passed values.
- *
- * @param	high	a long containg bits 63 - 32
- * @param	low	a long containing bits 31 - 0
+ * @param	x		the double to shift
+ * @return			the passed value << 1
  */
-define_function math_lshift_double(long high, long low) {
-    high = ((high & $7FFFFFFF) << 1) + ((low & $80000000) >> 15)
+define_function double math_lshift_double(double x) {
+	stack_var long hi
+	stack_var long low
+	hi = math_double_high_to_bits(x)
+	low = math_double_low_to_bits(x)
+    hi = ((hi & $7FFFFFFF) << 1) + ((low & $80000000) >> 15)
     low = (low & $7FFFFFFF) << 1
+	return math_build_double(hi, low)
 }
 
 /**
@@ -165,6 +175,15 @@ define_function char math_is_whole_number(double a) {
     return wholeComponent == a
 }
 
+/**
+ * Compares two numbers and return true if they are within MATH_PRECISION of
+ * each other.
+ *
+ * @param	x
+ */
+define_function char math_near(double x, double y) {
+	return abs_value(x - y) <= MATH_PRECISION
+}
 
 /**
  * Returns the smallest (closest to negative infinity) long value that is not
@@ -202,8 +221,31 @@ define_function slong math_floor(double a) {
  * @param	a	a double to round
  * @return		a signed long containing the rounded number
  */
-define_function slong math_round(DOUBLE a) {
+define_function slong math_round(double a) {
     return math_floor(a + 0.5)
+}
+
+/**
+ * Calculate the square root of the passed number.
+ *
+ * This function takes a log base 2 approximation then iterates a Babylonian
+ * refinement until the answer is within the math libraries defined precision.
+ *
+ * @param	a	the double to find the square root of
+ * @return		a double containing the square root
+ */
+define_function double sqrt(double x) {
+	stack_var long hi
+	stack_var long low
+    stack_var double tmp
+	tmp = math_rshift_double(x)
+	hi = (1 << 29) + math_double_high_to_bits(tmp) - (1 << 19)
+	low = math_double_low_to_bits(tmp)
+	tmp = math_build_double(hi, low)
+	while (!math_near(tmp * tmp, x)) {
+		tmp = 0.5 * (tmp + (x / tmp))
+	}
+	return tmp
 }
 
 /**
@@ -225,8 +267,8 @@ define_function float math_inv_sqrt(float x) {
 
 /**
  * Approximate the square root of the passed number based on the inverse square
- * root algorithm in mathInvSqrt(x). This is MUCH faster than mathSqrt(x) and
- * recommended over mathsQRT() for use anywhere a precise square root is not
+ * root algorithm in mathInvSqrt(x). This is MUCH faster than sqrt(x) and
+ * recommended over sqrt() for use anywhere a precise square root is not
  * required. Error is approx +/-0.15%.
  *
  * @param	a	the float to find the square root of
@@ -241,10 +283,9 @@ define_function float math_fast_sqrt(float x) {
  *
  * @param	x	the float to find the log of
  * @param	base	the base to use
- * @param	epsilon	calculation tolerance
  * @return		a float containing the passed numbers logarithm
  */
-define_function float math_log(float x, float base, float epsilon) {
+define_function float math_log(float x, float base) {
     stack_var float temp
     stack_var integer int
     stack_var float partial
@@ -263,7 +304,7 @@ define_function float math_log(float x, float base, float epsilon) {
     }
     partial = 0.5
     temp = temp * temp
-    while (partial > epsilon) {
+    while (partial > MATH_PRECISION) {
 	if (temp >= base) {
 	    decimal = decimal + partial
 	    temp = temp / base
@@ -281,7 +322,7 @@ define_function float math_log(float x, float base, float epsilon) {
  * @return		a float containing the passed numbers log base e
  */
 define_function float math_ln(float x) {
-    return math_log(x, MATH_E, 1.0e-13)
+    return math_log(x, MATH_E)
 }
 
 /**
@@ -291,7 +332,7 @@ define_function float math_ln(float x) {
  * @return		a float containing the passed numbers log base 2
  */
 define_function float math_log2(float x) {
-    return math_log(x, 2, 1.0e-13)
+    return math_log(x, 2)
 }
 
 /**
@@ -301,7 +342,7 @@ define_function float math_log2(float x) {
  * @return		a float containing the passed numbers log base 10
  */
 define_function float math_log10(float x) {
-    return math_log(x, 10, 1.0e-13)
+    return math_log(x, 10)
 }
 
 /**
