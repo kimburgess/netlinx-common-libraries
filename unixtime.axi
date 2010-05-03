@@ -138,7 +138,8 @@ define_start
 	unixtime_sync_with_clkmgr()
 
 	// check for updates every minute
-	timeline_create(UNIXTIME_TL, unixtime_tl_times, 1, TIMELINE_ABSOLUTE, TIMELINE_REPEAT)
+	timeline_create(UNIXTIME_TL, unixtime_tl_times, 1,
+			TIMELINE_ABSOLUTE, TIMELINE_REPEAT)
 }
 
 
@@ -188,7 +189,8 @@ define_function slong unixtime_now()
 define_function slong unixtime(char d[10], char t[8])
 {
 	return unixtime_offset(d, t,
-			(0 - ((unixtime_utc_offset_hr * 3600) + (unixtime_utc_offset_min * 60))))
+			(0 - ((unixtime_utc_offset_hr * 3600) +
+			(unixtime_utc_offset_min * 60))))
 }
 
 /**
@@ -202,36 +204,41 @@ define_function slong unixtime(char d[10], char t[8])
  */
 define_function slong unixtime_offset(char d[10], char t[8], slong offset)
 {
-	stack_var integer i
 	stack_var slong ret
+	stack_var integer i	
 	stack_var slong work
 
 	/*** DATE ***/
+	// do years
 	work = UNIXTIME_SECONDS_PER_YEAR
-	ret = work * (type_cast(date_to_year(d)) - 1970)			// do years
+	ret = work * (type_cast(date_to_year(d)) - 1970)
 
+	// add seconds for prior leapyears
 	work = UNIXTIME_SECONDS_PER_DAY
-	for (i = type_cast(date_to_year(d)) - 1; i >= 1972; i--) {	// add seconds for prior leapyears
+	for (i = type_cast(date_to_year(d)) - 1; i >= 1972; i--) {
 		if (unixtime_year_is_leapyear(i)) {
 			ret = ret + work
 		}
 	}
 
-	for (i = type_cast(date_to_month(d)) - 1; i >= 1; i--) {	// add seconds for months
+	// add seconds for months
+	for (i = type_cast(date_to_month(d)) - 1; i >= 1; i--) {
 		work = UNIXTIME_SECONDS_PER_MONTH[i]
 		ret = ret + work
 	}
 
+	// add a day due to this year being a leapyear?
 	work = date_to_year(d)
-	if (unixtime_year_is_leapyear(type_cast(work))) {			// add a day due to this year being a leapyear?
+	if (unixtime_year_is_leapyear(type_cast(work))) {
 		if (date_to_month(d) >= 3) {
 			work = UNIXTIME_SECONDS_PER_DAY
 			ret = ret + work
 		}
 	}
 
+	// add seconds for days
 	work = UNIXTIME_SECONDS_PER_DAY
-	for (i = type_cast(date_to_day(d)); i > 1; i--) {			// add seconds for days
+	for (i = type_cast(date_to_day(d)); i > 1; i--) {
 		ret = ret + work
 	}
 
@@ -244,7 +251,8 @@ define_function slong unixtime_offset(char d[10], char t[8], slong offset)
 
 	ret = ret + time_to_second(t)
 
-	ret = ret + offset											// apply offset
+	// apply offset
+	ret = ret + offset
 
 	return ret
 }
@@ -648,6 +656,195 @@ define_function unixtime_sync_with_clkmgr()
 	if (clkmgr_is_daylightsavings_on()) {
 		unixtime_utc_offset_hr++
 	}
+}
+
+/**
+ * Returns true if daylight savings time is currently active.
+ *
+ * @todo	Only supports occurance right now. Doesn't support fixed yet.
+ *
+ * @return				value indicating if DST is currently being observed
+ */
+define_function integer clkmgr_is_daylightsavings_active()
+{
+	stack_var char dst_start[80]
+	stack_var char dst_end[80]
+	stack_var integer stage
+
+	stack_var integer week_now
+	stack_var integer day_now
+
+	stack_var char work[10][12]
+
+	week_now = date_get_week_of_month(LDATE)
+	day_now = type_cast(day_of_week(LDATE))
+
+	dst_start = clkmgr_get_start_daylightsavings_rule()
+	dst_end = clkmgr_get_end_daylightsavings_rule()
+
+	stage = 0
+
+	if (remove_string(dst_start, ':', 1) == 'fixed:') {
+
+	} else {
+		explode_quoted(',', dst_start, work, 10, '"')
+		if (date_to_month(LDATE) > atoi(work[3])) {
+			stage = 1
+		} else if (date_to_month(LDATE) == atoi(work[3])) {
+			if (week_now > atoi(work[2])) {
+				stage = 1
+			} else if (week_now == atoi(work[2])) {
+				if (day_now >= atoi(work[1])) {
+					stage = 1
+				}
+			}
+		}
+	}
+
+	if (stage != 1) {
+		return 0
+	}
+
+	if (remove_string(dst_end, ':', 1) == 'fixed:') {
+
+	} else {
+		explode_quoted(',', dst_end, work, 10, '"')
+		if (date_to_month(LDATE) < atoi(work[3])) {
+			return 1
+		} else if (date_to_month(LDATE) == atoi(work[3])) {
+			if (week_now < atoi(work[2])) {
+				return 1
+			} else if (week_now == atoi(work[3])) {
+				if (day_now < atoi(work[1])) {
+					return 1
+				}
+			}
+		}
+	}
+
+	return 0
+}
+
+define_function integer date_get_week(char ld[10])
+{
+	stack_var integer d[3]
+	stack_var integer w[2]
+	stack_var integer work
+	stack_var integer ret
+
+	d[1] = type_cast(date_to_day(ld))
+	d[2] = type_cast(date_to_month(ld))
+
+	w[1] = 1
+	w[2] = 1
+
+	work = type_cast(day_of_week("'01/01/', itoa(type_cast(date_to_year(LDATE)))"))
+	ret = 1
+
+	while (w[1] != d[1] && w[2] != d[2]) {
+		work++
+		if (work > 7) {
+			work = 1
+			ret++
+		}
+
+		w[1]++
+		switch (w[2]) {
+			case 2: {
+				if (unixtime_year_is_leapyear(type_cast(date_to_year(ld)))) {
+					if (w[1] > 29) {
+						w[1] = 1
+						w[2]++
+					}
+				} else {
+					if (w[1] > 28) {
+						w[1] = 1
+						w[2]++
+					}
+				}
+			}
+			case 4:
+			case 6:
+			case 9:
+			case 11: {
+				if (w[1] > 30) {
+					w[1] = 1
+					w[2]++
+				}
+			}
+			default: {
+				if (w[1] > 31) {
+					w[1] = 1
+					w[2]++
+				}
+			}
+		}
+	}
+
+	return ret
+}
+
+define_function integer date_get_week_of_month(char ld[10])
+{
+	stack_var integer d[3]
+	stack_var integer w[2]
+	stack_var integer work
+	stack_var integer ret
+
+	d[1] = type_cast(date_to_day(ld))
+	d[2] = type_cast(date_to_month(ld))
+
+	w[1] = 1
+	w[2] = 1
+
+	work = type_cast(day_of_week("'01/01/', itoa(type_cast(date_to_year(LDATE)))"))
+	ret = 1
+
+	while (w[1] != d[1] && w[2] != d[2]) {
+		work++
+		if (work > 7) {
+			work = 1
+			ret++
+		}
+
+		w[1]++
+		switch (w[2]) {
+			case 2: {
+				if (unixtime_year_is_leapyear(type_cast(date_to_year(ld)))) {
+					if (w[1] > 29) {
+						w[1] = 1
+						w[2]++
+						ret = 1
+					}
+				} else {
+					if (w[1] > 28) {
+						w[1] = 1
+						w[2]++
+						ret = 1
+					}
+				}
+			}
+			case 4:
+			case 6:
+			case 9:
+			case 11: {
+				if (w[1] > 30) {
+					w[1] = 1
+					w[2]++
+					ret = 1
+				}
+			}
+			default: {
+				if (w[1] > 31) {
+					w[1] = 1
+					w[2]++
+					ret = 1
+				}
+			}
+		}
+	}
+
+	return ret
 }
 
 #end_if
