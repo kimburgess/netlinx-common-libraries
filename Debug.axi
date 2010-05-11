@@ -19,69 +19,82 @@
  * Contributor(s):
  * 	Kim Burgess <kim.burgess@justice.qld.gov.au>
  *
+ *
+ * $Id: String.axi 16 2010-05-03 03:41:33Z trueamx $
+ * tab-width: 4 columns: 80
  */
-PROGRAM_NAME='Debug'
+#if_not_defined __DEBUG_LIB
+#define __DEBUG_LIB
+
+program_name='Debug'
 
 
-DEFINE_DEVICE
+define_device
 
 console =	0:0:0					// Device to send debug messages to
 
 
-DEFINE_VARIABLE
+define_constant
 
-constant char DEBUG_OFF		= 0		// Available debug verbosity levels
-constant char DEBUG_ERROR 	= 1
-constant char DEBUG_WARN 	= 2
-constant char DEBUG_INFO 	= 3
+char DEBUG_OFF		= 0				// Available debug verbosity levels
+char DEBUG_ERROR 	= 1
+char DEBUG_WARN 	= 2
+char DEBUG_INFO 	= 3
 
-constant char DEBUG_LEVEL_STRINGS[4][16] = {
+char DEBUG_LEVEL_STRINGS[4][16] = {
     'Off',
     'Error',
     'Warn',
     'Info'
 }
 
+
+define_variable
+
 persistent char debug_level			// Current system debug level
 
 
-(**
+/**
  * Returns a string representing the debug level passed.
  *
  * @param	x		an char specifying the debug level
  * @return			a string representing the level
- *)
-define_function char[5] debug_get_level_string(char x) {
+ */
+define_function char[5] debug_get_level_string(char x)
+{
     return DEBUG_LEVEL_STRINGS[x + 1]
 }
 
-(**
+/**
  * Sets the current system debugging level for controlling debug message
  * verbosity.
  *
  * @param	x		a char specifying the debug level to set
- *)
-define_function debug_set_level(char x) {
+ */
+define_function debug_set_level(char x)
+{
 	if (x >= DEBUG_OFF && x <= DEBUG_INFO) {
 		println("'Debug level set to ', debug_get_level_string(x)")
 		debug_level = x
 	} else {
-		debug_msg(DEBUG_WARN, "'Invalid debug level, defaulting to ', debug_get_level_string(DEBUG_ERROR)")
+		debug_msg(DEBUG_WARN, "'Invalid debug level, defaulting to ', 
+			debug_get_level_string(DEBUG_ERROR)")
 		debug_set_level(DEBUG_ERROR)
 	}
 }
 
-(**
+/**
  * Print a line to the console (diagnostics).
  *
- * The diagnostics output is limited to 131 characters per line. If the message
- * to print is longer than this it will wrap into multiple lines, with line
- * breaks inserted at any whitespace found near (character 80 onwards) the end
- * of a line.
+ * The diagnostics output is limited to 131 characters per line. If the
+ * message to print is longer than this it will wrap into multiple lines, with
+ * linebreaks inserted at any whitespace found near (character 80 onwards) the
+ * end of a line.
  *
  * @param	x		a string containing the message to send
- *)
-define_function println(char x[]) {
+ */
+define_function println(char x[])
+{
 	stack_var integer start
 	stack_var integer end
 	stack_var integer len
@@ -90,7 +103,9 @@ define_function println(char x[]) {
 	while (start < len) {
 		end = min_value(start + 131, len)
 		while (end > start + 80) {
-			if ((x[end] > $08 && x[end] < $0E) || (x[end] > $1B && x[end] < $21)) {
+			if ((x[end] > $08 && 
+				x[end] < $0E) || 
+				(x[end] > $1B && x[end] < $21)) {
 				end++
 				break
 			}
@@ -104,7 +119,7 @@ define_function println(char x[]) {
 	}
 }
 
-(**
+/**
  * Voices a debug message if required by the current debug level. All system
  * messages should pass through here.
  *
@@ -113,8 +128,9 @@ define_function println(char x[]) {
  *
  * @param	msg_level	a char specifying the debug level of the message
  * @param	msg			a string containing the debug message
- *)
-define_function debug_msg(char msg_level, char msg[]) {
+ */
+define_function debug_msg(char msg_level, char msg[])
+{
 	if (msg_level < DEBUG_ERROR || msg_level > DEBUG_INFO) {
 		debug_msg(DEBUG_ERROR, "'invalid debug level specified - ', msg")
 		return
@@ -123,3 +139,5 @@ define_function debug_msg(char msg_level, char msg[]) {
 		println("upper_string(debug_get_level_string(msg_level)),': ', msg")
     }
 }
+
+#end_if

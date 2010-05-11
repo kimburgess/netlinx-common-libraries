@@ -1,5 +1,3 @@
-PROGRAM_NAME='String'
-
 /**
  * The contents of this file are subject to the Mozilla Public License Version
  * 1.1 (the "License"); you may not use this file except in compliance with
@@ -23,13 +21,14 @@ PROGRAM_NAME='String'
  * 	Kim Burgess <kim.burgess@justice.qld.gov.au>
  *	true <amx at trueserve dot org>
  *
+ *
  * $Id$
  * tab-width: 4 columns: 80
  */
-
 #if_not_defined __STRING_LIB
 #define __STRING_LIB
 
+program_name='String'
 
 define_constant
 STRING_RETURN_SIZE_LIMIT	= 1024	// Maximum string return size
@@ -59,23 +58,23 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_size_error()
  * delimiter string inserted between each item.
  *
  * @param	strings		the string array to implode
- * @param	deliminator	the character string to insert between the imploded
+ * @param	delim		the character string to insert between the imploded
 						elements
  * @return				the imploded string
  */
 define_function char[STRING_RETURN_SIZE_LIMIT] implode(char strings[][],
-		char delimiter[])
+		char delim[])
 {
     stack_var char ret[STRING_RETURN_SIZE_LIMIT + 1]
 	stack_var integer i
-    stack_var integer size
+    stack_var integer len
 
-    size = length_array(strings)
+    len = length_array(strings)
     ret = strings[1]
 
-    if (size > 1) {
-		for (i = size - 1; i; i--) {
-			ret = "ret, delimiter, strings[(size - i) + 1]"
+    if (len > 1) {
+		for (i =len - 1; i; i--) {
+			ret = "ret, delim, strings[(len - i) + 1]"
 		}
     }
 
@@ -176,24 +175,24 @@ define_function integer explode_quoted(char delimiter, char a[], char ret[][],
 /**
  * Checks to see if the passed character is a printable ASCII character.
  *
- * @param	test		the character to check
+ * @param	a			the character to check
  * @return				a boolean value specifying whether it is printable
  */
-define_function char char_is_printable(char test)
+define_function char char_is_printable(char a)
 {
-    return test > $20 && test <= $7E
+    return a > $20 && a <= $7E
 }
 
 /**
  * Checks to see if the passed character is a whitespace character.
  *
- * @param	test		the character to check
+ * @param	a			the character to check
  * @return				a boolean value specifying whether the character is
 						whitespace
  */
-define_function char char_is_whitespace(char test)
+define_function char char_is_whitespace(char a)
 {
-    return (test >= $09 && test <= $0D) || (test >= $1C && test <= $20)
+    return (a >= $09 && a <= $0D) || (a >= $1C && a <= $20)
 }
 
 /**
@@ -263,12 +262,12 @@ define_function char[STRING_RETURN_SIZE_LIMIT] trim(char a[])
 /**
  * Converts a boolean value to its string equivalent of either a 'ON' or 'OFF'.
  *
- * @param	boolean		a boolean value to convert
- * @return				a string equivalent (as ON/OFF)
+ * @param	a		a boolean value to convert
+ * @return			a string equivalent (as ON/OFF)
  */
-define_function char[3] bool_to_string(char boolean)
+define_function char[3] bool_to_string(char a)
 {
-    if (boolean) {
+    if (a) {
 		return 'ON'
     } else {
 		return 'OFF'
@@ -284,16 +283,15 @@ define_function char[3] bool_to_string(char boolean)
  */
 define_function char string_to_bool(char a[])
 {
-    stack_var char temp[8]
+    stack_var char tmp[8]
 
-    temp = lower_string(trim(a))
+    tmp = lower_string(trim(a))
 
-    if (temp == 'on' ||
-		temp == 'true' ||
-		temp == 'yes' ||
-		temp == 'y' ||
-		temp == '1') {
-
+    if (tmp == 'on' ||
+		tmp == 'true' ||
+		tmp == 'yes' ||
+		tmp == 'y' ||
+		tmp == '1') {
 		return TRUE
     } else {
 		return FALSE
@@ -311,17 +309,17 @@ define_function char[STRING_RETURN_SIZE_LIMIT] int_array_to_string(
 {
     stack_var char list[STRING_RETURN_SIZE_LIMIT]
 	stack_var integer i
-    stack_var integer size
+    stack_var integer len
     stack_var integer retlen
     stack_var integer item
 
-    size = length_array(ints)
+    len = length_array(ints)
 
     list = itoa(ints[1])
 
-    if (size > 1) {
-		for (i = size - 1; i; i--) {
-			item = (size - i) + 1
+    if (len > 1) {
+		for (i = len - 1; i; i--) {
+			item = (len - i) + 1
 			retlen = retlen + length_string(itoa(ints[item]))
 
 			if (retlen > STRING_RETURN_SIZE_LIMIT) {
@@ -340,12 +338,12 @@ define_function char[STRING_RETURN_SIZE_LIMIT] int_array_to_string(
  * a string by passing 'space' as the delimiter.
  *
  * @param	a			a string to split
- * @param	delimiter	the character string which divides the list entries
+ * @param	delim		the character string which divides the list entries
  * @param	item		the item number to return
  * @return				a string array the requested list item
  */
 define_function char[STRING_RETURN_SIZE_LIMIT] string_get_list_item(char a[],
-		char delimiter[], integer item)
+		char delim[], integer item)
 {
     stack_var integer ret
     stack_var integer i
@@ -354,7 +352,7 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_get_list_item(char a[],
 
     for (i = 1; i <= item; i++) {
 		start = end + 1
-		end = find_string(a, delimiter, start)
+		end = find_string(a, delim, start)
     }
 
     if (!end) {
@@ -374,16 +372,16 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_get_list_item(char a[],
  * delimiter.
  *
  * @param	a			a string containing a key/value pair
- * @param	delimiter	the character string which divides the key and value
+ * @param	delim		the string which divides the key and value
  * @return				a string containing the key component
  */
 define_function char[STRING_RETURN_SIZE_LIMIT] string_get_key(char a[],
-		char delimiter[])
+		char delim[])
 {
     stack_var integer pos
     stack_var integer retlen
 
-    pos = find_string(a, delimiter, 1)
+    pos = find_string(a, delim, 1)
 
     if (pos) {
 		retlen = pos - 1
@@ -402,18 +400,18 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_get_key(char a[],
  * Gets the value from a key/value pair string with the specified delimiter.
  *
  * @param	a			a string containing a key/value pair
- * @param	delimiter	the character string which divides the key and value
+ * @param	delim		the string which divides the key and value
  * @return				a string containing the value component
  */
 define_function char[STRING_RETURN_SIZE_LIMIT] string_get_value(char a[],
-		char delimiter[])
+		char delim[])
 {
     stack_var integer pos
     stack_var integer retlen
 
-    pos = find_string(a, delimiter, 1)
+    pos = find_string(a, delim, 1)
 
-    retlen = length_string(a) - (pos + length_string(delimiter) - 1)
+    retlen = length_string(a) - (pos + length_string(delim) - 1)
 
     if (retlen > STRING_RETURN_SIZE_LIMIT) {
 		return string_size_error()
@@ -426,18 +424,21 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_get_value(char a[],
  * Switches the day and month fields of a date string (for coverting between US
  * and international standards). for example 05/28/2009 becomes 28/05/2009.
  *
- * QUESTION: Should we have a date/time library? Should this be merged with unixtime?
+ * @todo			merge this into a time date lib with unixtime
+ * @param	a		a string representation of a date in the form xx/xx/xxxx
+ * @return			a string representing the same date with the first two
+ *					components reversed
  */
-define_function char[10] string_date_invert(char dateString[])
+define_function char[10] string_date_invert(char a[])
 {
-    stack_var integer index
-    stack_var char components[3][4]
+    stack_var integer idx
+    stack_var char comp[3][4]
 
-    for (index = 3; index; index--) {
-		components[index] = string_get_list_item(dateString, "'/'", index)
+    for (idx = 3; idx; idx--) {
+		comp[idx] = string_get_list_item(a, "'/'", idx)
     }
 
-    return "components[2], '/', components[1], '/', components[3]"
+    return "comp[2], '/', comp[1], '/', comp[3]"
 }
 
 /**
@@ -445,8 +446,8 @@ define_function char[10] string_date_invert(char dateString[])
  * substrings
  *
  * @param	a		a string to split
- * @param	left		the character sequence marking the left bound
- * @param	right		the character sequence marking the right bound
+ * @param	left	the character sequence marking the left bound
+ * @param	right	the character sequence marking the right bound
  * @return			a string contained within the boundary sequences
  */
 define_function char[STRING_RETURN_SIZE_LIMIT] string_get_between(char a[],
@@ -492,7 +493,7 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_ucfirst(char a[])
 /**
  * Returns a copy of a string with the first alpha character in each word
  * capitalized. Non alpha characters are not modified. Pass a
- * LOWER_STRING()'d string to lowercase all other characters.
+ * lower_string()'d string to lowercase all other characters.
  *
  * @param	a		a string to capitalize first characters of
  * @return			a capitalized string
@@ -526,7 +527,7 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_ucwords(char a[])
  *
  * @todo			Possibly allow value to be a string?
  * @param	a		the string to prefix
- * @param	value		the value to prefix on the string
+ * @param	value	the value to prefix on the string
  * @param	len		the requested length of the string
  * @return			a string prefixed to length len with value
  */
@@ -556,7 +557,7 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_prefix_to_length(
  *
  * @todo			Possibly allow value to be a string?
  * @param	a		the string to suffix
- * @param	value		the value to suffix on the string
+ * @param	value	the value to suffix on the string
  * @param	len		the requested length of the string
  * @return			a string suffixed to length len with value
  */
@@ -614,6 +615,25 @@ define_function char[STRING_RETURN_SIZE_LIMIT] urlencode(char a[])
 	}
 
 	return ret
+}
+
+/**
+ * Returns the index of the first occurance of a string within a passed array
+ * of strings.
+ *
+ * @param	haystack	an array of strings to search
+ * @param	str			the character sequence to search for
+ * @return				an integer of the index of haystack in which the string was located (0 if not found)
+ */
+define_function integer find_string_multi(char haystack[][], char str[])
+{
+    stack_var integer idx
+	for (idx = length_array(haystack); idx; idx--) {
+		if (find_string(haystack[idx], str, 1)) {
+			return idx
+		}
+	}
+	return 0
 }
 
 #end_if
