@@ -26,9 +26,9 @@
  * tab-width: 4 columns: 80
  */
 
-#if_not_defined __NCL_STRING_LIB
-#define __NCL_STRING_LIB
-
+program_name='String'
+#if_not_defined __NCL_LIB_STRING
+#define __NCL_LIB_STRING
 
 define_constant
 STRING_RETURN_SIZE_LIMIT	= 1024	// Maximum string return size
@@ -579,7 +579,7 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_suffix_to_length(
 define_function char[STRING_RETURN_SIZE_LIMIT] remove_string_by_length(
 		char a[], integer len)
 {
-	return remove_string(str, left_string(a, len), 1)
+	return remove_string(a, left_string(a, len), 1)
 }
 
 

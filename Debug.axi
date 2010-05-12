@@ -24,8 +24,9 @@
  * tab-width: 4 columns: 80
  */
 
-#if_not_defined __NCL_DEBUG_LIB
-#define __NCL_DEBUG_LIB
+program_name='Debug'
+#if_not_defined __NCL_LIB_DEBUG
+#define __NCL_LIB_DEBUG
 
 
 define_device
@@ -73,7 +74,7 @@ define_function debug_set_level(char x)
 		println("'Debug level set to ', debug_get_level_string(x)")
 		debug_level = x
 	} else {
-		debug_msg(DEBUG_WARN, "'Invalid debug level, defaulting to ', 
+		debug_msg(DEBUG_WARN, "'Invalid debug level, defaulting to ',
 			debug_get_level_string(DEBUG_ERROR)")
 		debug_set_level(DEBUG_ERROR)
 	}
@@ -99,8 +100,8 @@ define_function println(char x[])
 	while (start < len) {
 		end = min_value(start + 131, len)
 		while (end > start + 80) {
-			if ((x[end] > $08 && 
-				x[end] < $0E) || 
+			if ((x[end] > $08 &&
+				x[end] < $0E) ||
 				(x[end] > $1B && x[end] < $21)) {
 				end++
 				break

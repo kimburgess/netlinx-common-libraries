@@ -24,8 +24,9 @@
  * tab-width: 4 columns: 80
  */
 
-#if_not_defined __NCL_ARRAY_LIB
-#define __NCL_ARRAY_LIB
+program_name='array'
+#if_not_defined __NCL_LIB_ARRAY
+#define __NCL_LIB_ARRAY
 
 /**
  * Finds the index for an matching entry in an array.

@@ -38,8 +38,9 @@
  * tab-width: 4, columns: 120
 */
 
-#if_not_defined __NCL_UNIXTIME_LIB
-#define __NCL_UNIXTIME_LIB
+program_name='unixtime'
+#if_not_defined __NCL_LIB_UNIXTIME
+#define __NCL_LIB_UNIXTIME
 
 /*
  * REQUIRES STRING LIBRARY

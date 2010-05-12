@@ -23,8 +23,9 @@
  * tab-width: 4 columns: 80
  */
 
-#if_not_defined __NCL_MATH_LIB
-#define __NCL_MATH_LIB
+program_name='Math'
+#if_not_defined __NCL_LIB_MATH
+#define __NCL_LIB_MATH
 
 
 define_constant
