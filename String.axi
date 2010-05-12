@@ -623,16 +623,26 @@ define_function char[STRING_RETURN_SIZE_LIMIT] urlencode(char a[])
  *
  * @param	haystack	an array of strings to search
  * @param	str			the character sequence to search for
- * @return				an integer of the index of haystack in which the string was located (0 if not found)
+ * @param	start		the array element to begin searching from
+ * @return				an integer containing the the index of haystack in
+ *						which the string was located (0 if not found)
  */
-define_function integer find_string_multi(char haystack[][], char str[])
+define_function integer find_string_multi(char haystack[][], char str[],
+	integer start)
 {
     stack_var integer idx
-	for (idx = length_array(haystack); idx; idx--) {
-		if (find_string(haystack[idx], str, 1)) {
-			return idx
+	stack_var integer len
+
+	len = length_array(haystack)
+
+	if (start <= len) {
+		for (idx = start; idx <= len; idx++) {
+			if (find_string(haystack[idx], str, 1)) {
+				return idx
+			}
 		}
 	}
+
 	return 0
 }
 
