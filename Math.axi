@@ -19,17 +19,15 @@
  * Contributor(s):
  * 	Kim Burgess <kim.burgess@justice.qld.gov.au>
  *
- * $Id: String.axi 16 2010-05-03 03:41:33Z trueamx $
+ * $Id$
  * tab-width: 4 columns: 80
  */
-#if_not_defined __MATH_LIB
-#define __MATH_LIB
 
-program_name='Math'
+#if_not_defined __NCL_MATH_LIB
+#define __NCL_MATH_LIB
 
 
 define_constant
-
 double MATH_E = 2.718281828459045
 double MATH_PI = 3.141592653589793
 
@@ -39,7 +37,6 @@ double MATH_PRECISION = 1.0e-13
 
 
 define_variable
-
 // Psuedo constants for non-normal numbers - these are injected with their
 // relevant bit patterns on boot
 volatile double MATH_NaN

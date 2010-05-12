@@ -1,5 +1,3 @@
-PROGRAM_NAME='_unixtime_0_0_1'
-
 /**
  * UNIX Timestamp functions for AMX NetLinx
  * Copyright (c) 2010, true
@@ -14,6 +12,9 @@ PROGRAM_NAME='_unixtime_0_0_1'
  * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
  * License for the specific language governing rights and limitations
  * under the License.
+ *
+ * Contributor(s):
+ *	true <amx at trueserve dot org>
  *
  *
  * This implementation relies on newer firmwares with clkmgr set up
@@ -37,8 +38,8 @@ PROGRAM_NAME='_unixtime_0_0_1'
  * tab-width: 4, columns: 120
 */
 
-#if_not_defined __UNIXTIME_LIB
-#define __UNIXTIME_LIB
+#if_not_defined __NCL_UNIXTIME_LIB
+#define __NCL_UNIXTIME_LIB
 
 /*
  * REQUIRES STRING LIBRARY
@@ -205,7 +206,7 @@ define_function slong unixtime(char d[10], char t[8])
 define_function slong unixtime_offset(char d[10], char t[8], slong offset)
 {
 	stack_var slong ret
-	stack_var integer i	
+	stack_var integer i
 	stack_var slong work
 
 	/*** DATE ***/

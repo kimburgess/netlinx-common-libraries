@@ -25,10 +25,10 @@
  * $Id$
  * tab-width: 4 columns: 80
  */
-#if_not_defined __STRING_LIB
-#define __STRING_LIB
 
-program_name='String'
+#if_not_defined __NCL_STRING_LIB
+#define __NCL_STRING_LIB
+
 
 define_constant
 STRING_RETURN_SIZE_LIMIT	= 1024	// Maximum string return size
@@ -93,17 +93,17 @@ define_function char[STRING_RETURN_SIZE_LIMIT] implode(char strings[][],
  *
  * @todo				Don't make quoted strings necessary; explode based on a
 						string instead of a char
- * @param	delimiter	the delimiter to use for the exploding
+ * @param	delim		the delimiter to use for the exploding
  * @param	a			the string array to explode
  * @param	ret			the returned exploded string array of string arrays
  * @param	ret_len		the amount of entries in ret[][]; pass 0 if you don't
 						care about sanitizing ret[][]
  * @return				the amount of entries stuffed into ret[][]
  */
-define_function integer explode(char delimiter, char a[], char ret[][],
+define_function integer explode(char delim, char a[], char ret[][],
 		integer ret_len)
 {
-	return explode_quoted(delimiter, a, ret, ret_len, 0)
+	return explode_quoted(delim, a, ret, ret_len, 0)
 }
 
 /**
@@ -116,7 +116,7 @@ define_function integer explode(char delimiter, char a[], char ret[][],
  *
  * @todo				Don't make quoted strings necessary; explode based on a
 						string instead of a char
- * @param	delimiter	the delimiter to use for the exploding
+ * @param	delim		the delimiter to use for the exploding
  * @param	a			the string array to explode
  * @param	ret			the returned exploded string array of string arrays
  * @param	ret_len		the amount of entries in ret[][]; pass 0 if you don't
@@ -124,7 +124,7 @@ define_function integer explode(char delimiter, char a[], char ret[][],
  * @param	quote		character to use as a quote
  * @return				the amount of entries stuffed into ret[][]
  */
-define_function integer explode_quoted(char delimiter, char a[], char ret[][],
+define_function integer explode_quoted(char delim, char a[], char ret[][],
 		integer ret_len, char quote)
 {
     stack_var integer i
@@ -135,7 +135,7 @@ define_function integer explode_quoted(char delimiter, char a[], char ret[][],
     i = 1
 
     while (start <= length_string(a)) {
-		if (a[start] == delimiter) {			// skip delimiter
+		if (a[start] == delim) {			// skip delimiter
 			start++
 			continue
 		}
@@ -152,7 +152,7 @@ define_function integer explode_quoted(char delimiter, char a[], char ret[][],
 			}
 		}
 
-		end = find_string(a, "delimiter", start)// nothing else stopping us?
+		end = find_string(a, "delim", start)// nothing else stopping us?
 		if (end) {								// then seperate by delimiter
 			ret[i] = mid_string(a, start, (end - start))
 			i++
@@ -577,9 +577,9 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_suffix_to_length(
 }
 
 define_function char[STRING_RETURN_SIZE_LIMIT] remove_string_by_length(
-		char str[], integer len)
+		char a[], integer len)
 {
-	return remove_string(str, left_string(str, len), 1)
+	return remove_string(str, left_string(a, len), 1)
 }
 
 
@@ -627,18 +627,18 @@ define_function char[STRING_RETURN_SIZE_LIMIT] urlencode(char a[])
  * @return				an integer containing the the index of haystack in
  *						which the string was located (0 if not found)
  */
-define_function integer find_string_multi(char haystack[][], char str[],
+define_function integer find_string_multi(char haystack[][], char needle[],
 	integer start)
 {
-    stack_var integer idx
+    stack_var integer i
 	stack_var integer len
 
 	len = length_array(haystack)
 
 	if (start <= len) {
-		for (idx = start; idx <= len; idx++) {
-			if (find_string(haystack[idx], str, 1)) {
-				return idx
+		for (i = start; i <= len; i++) {
+			if (find_string(haystack[i], needle, 1)) {
+				return i
 			}
 		}
 	}

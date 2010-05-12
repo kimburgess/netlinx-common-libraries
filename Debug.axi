@@ -20,22 +20,19 @@
  * 	Kim Burgess <kim.burgess@justice.qld.gov.au>
  *
  *
- * $Id: String.axi 16 2010-05-03 03:41:33Z trueamx $
+ * $Id$
  * tab-width: 4 columns: 80
  */
-#if_not_defined __DEBUG_LIB
-#define __DEBUG_LIB
 
-program_name='Debug'
+#if_not_defined __NCL_DEBUG_LIB
+#define __NCL_DEBUG_LIB
 
 
 define_device
-
 console =	0:0:0					// Device to send debug messages to
 
 
 define_constant
-
 char DEBUG_OFF		= 0				// Available debug verbosity levels
 char DEBUG_ERROR 	= 1
 char DEBUG_WARN 	= 2
@@ -50,7 +47,6 @@ char DEBUG_LEVEL_STRINGS[4][16] = {
 
 
 define_variable
-
 persistent char debug_level			// Current system debug level
 
 
