@@ -301,11 +301,12 @@ define_function char string_to_bool(char a[])
 /**
  * Converts an integer array into a comma serperated string list of its values.
  *
- * @param	ints		am intger array of values to 'listify'
+ * @param	ints		an intger array of values to 'listify'
+ * @param	delim		a string array to insert between entries
  * @return				a string list of the values
  */
 define_function char[STRING_RETURN_SIZE_LIMIT] int_array_to_string(
-		integer ints[])
+		integer ints[], char delim[])
 {
     stack_var char list[STRING_RETURN_SIZE_LIMIT]
 	stack_var integer i
@@ -326,7 +327,7 @@ define_function char[STRING_RETURN_SIZE_LIMIT] int_array_to_string(
 				return string_size_error()
 			}
 
-			list = "list, ',', itoa(ints[item])"
+			list = "list, delim, itoa(ints[item])"
 		}
     }
 
