@@ -619,28 +619,26 @@ define_function char[STRING_RETURN_SIZE_LIMIT] urlencode(char a[])
 }
 
 /**
- * Returns the index of the first occurance of a string within a passed array
- * of strings.
+ * Search through a string for a match against a list of possible substrings
+ * and return the element index of the matched string
  *
- * @param	haystack	an array of strings to search
- * @param	str			the character sequence to search for
+ * @param	haystack	a string to search
+ * @param	needle		a list of substrings to match
  * @param	start		the array element to begin searching from
- * @return				an integer containing the the index of haystack in
- *						which the string was located (0 if not found)
+ * @return				an integer containing the the element index of needles
+ *						that was matched (0 if not found)
  */
-define_function integer find_string_multi(char haystack[][], char needle[],
+define_function integer find_string_multi(char haystack[], char needles[][],
 	integer start)
 {
     stack_var integer i
 	stack_var integer len
 
-	len = length_array(haystack)
+	len = length_array(needles)
 
-	if (start <= len) {
-		for (i = start; i <= len; i++) {
-			if (find_string(haystack[i], needle, 1)) {
-				return i
-			}
+	for (i = start; i <= len; i++) {
+		if (find_string(haystack, needles[i], 1)) {
+			return i
 		}
 	}
 
