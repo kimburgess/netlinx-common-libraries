@@ -24,13 +24,12 @@
  * tab-width: 4 columns: 80
  */
 
-program_name='Debug'
+program_name='debug'
 #if_not_defined __NCL_LIB_DEBUG
 #define __NCL_LIB_DEBUG
 
 
-define_device
-console =	0:0:0					// Device to send debug messages to
+include 'io'
 
 
 define_constant
@@ -75,44 +74,8 @@ define_function debug_set_level(char x)
 		debug_level = x
 	} else {
 		debug_msg(DEBUG_WARN, "'Invalid debug level, defaulting to ',
-			debug_get_level_string(DEBUG_ERROR)")
+				debug_get_level_string(DEBUG_ERROR)")
 		debug_set_level(DEBUG_ERROR)
-	}
-}
-
-/**
- * Print a line to the console (diagnostics).
- *
- * The diagnostics output is limited to 131 characters per line. If the
- * message to print is longer than this it will wrap into multiple lines, with
- * linebreaks inserted at any whitespace found near (character 80 onwards) the
- * end of a line.
- *
- * @param	x		a string containing the message to send
- */
-define_function println(char x[])
-{
-	stack_var integer start
-	stack_var integer end
-	stack_var integer len
-	start = 1
-	len = length_string(x)
-	while (start < len) {
-		end = min_value(start + 131, len)
-		while (end > start + 80) {
-			if ((x[end] > $08 &&
-				x[end] < $0E) ||
-				(x[end] > $1B && x[end] < $21)) {
-				end++
-				break
-			}
-			end--
-		}
-		if (end <= start + 80) {	// No whitespace found, or short line
-			end = min_value(start + 131, len)
-		}
-		send_string console, mid_string(x, start, (end - start) + 1)
-		start = end
 	}
 }
 

@@ -26,9 +26,13 @@
  * tab-width: 4 columns: 80
  */
 
-program_name='String'
+program_name='string'
 #if_not_defined __NCL_LIB_STRING
 #define __NCL_LIB_STRING
+
+
+include 'io'
+
 
 define_constant
 STRING_RETURN_SIZE_LIMIT	= 1024	// Maximum string return size
@@ -48,7 +52,7 @@ STRING_RETURN_SIZE_LIMIT	= 1024	// Maximum string return size
 define_function char[STRING_RETURN_SIZE_LIMIT] string_size_error()
 {
     // handle, alert, ignore etc here
-    send_string 0, "'Return size to small in String.axi'"
+    println("'Return size to small in String.axi'")
 
     return 'error'
 }

@@ -8,8 +8,8 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * The Original Code is math library to expand on the base math functionality
- * provided by the NetLinx language.
+ * The Original Code is a math library to expand on the base math
+ * functionality provided by the NetLinx language.
  *
  * The Initial Developer of the Original Code is Queensland Department of
  * Justice and Attorney-General.
@@ -23,7 +23,7 @@
  * tab-width: 4 columns: 80
  */
 
-program_name='Math'
+program_name='math'
 #if_not_defined __NCL_LIB_MATH
 #define __NCL_LIB_MATH
 
