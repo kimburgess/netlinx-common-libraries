@@ -147,7 +147,7 @@ define_function integer explode_quoted(char delim, char a[], char ret[][],
 		if (quote) {
 			if (a[start] == quote) {				// handle quotes
 				end = find_string(a, "quote", start + 1)
-				if(end){
+				if (end) {
 					ret[i] = mid_string(a, start + 1, (end - start) - 1)
 					i++
 	
@@ -297,6 +297,7 @@ define_function char string_to_bool(char a[])
 		tmp == 'yes' ||
 		tmp == 'y' ||
 		tmp == '1') {
+		
 		return TRUE
     } else {
 		return FALSE
@@ -313,10 +314,9 @@ define_function char string_to_bool(char a[])
 define_function char[STRING_RETURN_SIZE_LIMIT] int_array_to_string(
 		integer ints[], char delim[])
 {
-    stack_var char list[STRING_RETURN_SIZE_LIMIT]
+    stack_var char list[STRING_RETURN_SIZE_LIMIT + 1]
 	stack_var integer i
     stack_var integer len
-    stack_var integer retlen
     stack_var integer item
 
     len = length_array(ints)
@@ -326,15 +326,13 @@ define_function char[STRING_RETURN_SIZE_LIMIT] int_array_to_string(
     if (len > 1) {
 		for (i = len - 1; i; i--) {
 			item = (len - i) + 1
-			retlen = retlen + length_string(itoa(ints[item]))
-
-			if (retlen > STRING_RETURN_SIZE_LIMIT) {
-				return string_size_error()
-			}
-
 			list = "list, delim, itoa(ints[item])"
 		}
     }
+	
+	if (length_string(list) > STRING_RETURN_SIZE_LIMIT) {
+		return string_size_error()
+	}
 
     return list
 }
@@ -366,11 +364,12 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_get_list_item(char a[],
     }
 
     ret = end - start
-    if (ret > STRING_RETURN_SIZE_LIMIT) {
+    
+	if (ret > STRING_RETURN_SIZE_LIMIT) {
 		return string_size_error()
-    } else {
-		return mid_string(a, start, ret)
     }
+	
+	return mid_string(a, start, ret)
 }
 
 /**
@@ -397,9 +396,9 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_get_key(char a[],
 
     if (retlen > STRING_RETURN_SIZE_LIMIT) {
 		return string_size_error()
-    } else {
-		return left_string(a, retlen)
     }
+	
+	return left_string(a, retlen)
 }
 
 /**
@@ -421,9 +420,9 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_get_value(char a[],
 
     if (retlen > STRING_RETURN_SIZE_LIMIT) {
 		return string_size_error()
-    } else {
-		return right_string(a, retlen)
     }
+	
+	return right_string(a, retlen)
 }
 
 /**
@@ -469,9 +468,9 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_get_between(char a[],
 
     if (retlen > STRING_RETURN_SIZE_LIMIT) {
 		return string_size_error()
-    } else {
-		return mid_string(a, start, retlen)
     }
+	
+	return mid_string(a, start, retlen)
 }
 
 
@@ -543,7 +542,9 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_prefix_to_length(
     stack_var char ret[STRING_RETURN_SIZE_LIMIT]
 	stack_var integer i
 
-	if (len > STRING_RETURN_SIZE_LIMIT) {
+	if (len > STRING_RETURN_SIZE_LIMIT ||
+		length_string(a) > STRING_RETURN_SIZE_LIMIT) {
+		
 		return string_size_error()
 	}
 
@@ -573,7 +574,13 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_suffix_to_length(
     stack_var char ret[STRING_RETURN_SIZE_LIMIT]
 	stack_var integer i
 
-    if (length_string(a) < len) {
+    if (len > STRING_RETURN_SIZE_LIMIT ||
+		length_string(a) > STRING_RETURN_SIZE_LIMIT) {
+		
+		return string_size_error()
+	}
+	
+	if (length_string(a) < len) {
 		for (i = length_string(a); i < len; i++) {
 			ret = "value, ret"
 		}
@@ -585,6 +592,10 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_suffix_to_length(
 define_function char[STRING_RETURN_SIZE_LIMIT] remove_string_by_length(
 		char a[], integer len)
 {
+	if (length_string(a) - len > STRING_RETURN_SIZE_LIMIT) {
+		return string_size_error()
+	}
+	
 	return remove_string(a, left_string(a, len), 1)
 }
 
@@ -592,6 +603,7 @@ define_function char[STRING_RETURN_SIZE_LIMIT] remove_string_by_length(
 /**
  * Returns a url-encoded string according to RFC 1736 / RFC 2732.
  *
+ * @todo			finish this function - it is very incomplete
  * @param	a		the string to urlencode
  * @return			a string urlencoded
  */
