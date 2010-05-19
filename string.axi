@@ -145,14 +145,15 @@ define_function integer explode_quoted(char delim, char a[], char ret[][],
 		}
 
 		if (quote) {
-			if (a[start] == '"') {				// handle quotes
-				end = find_string(a, '"', start + 1)
-
-				ret[i] = mid_string(a, start + 1, (end - start) - 1)
-				i++
-
-				start = end + 1
-				continue
+			if (a[start] == quote) {				// handle quotes
+				end = find_string(a, "quote", start + 1)
+				if(end){
+					ret[i] = mid_string(a, start + 1, (end - start) - 1)
+					i++
+	
+					start = end + 1
+					continue
+				}
 			}
 		}
 
