@@ -56,7 +56,7 @@ define_function write(char buf[], integer offset, integer len)
 	stack_var integer start
 	stack_var integer end
 	stack_var integer min_len
-	
+
 	if (io_out_mtu && len > io_out_mtu) {
 		min_len = type_cast(io_out_mtu / 2)
 		start = offset + 1
@@ -70,11 +70,11 @@ define_function write(char buf[], integer offset, integer len)
 				}
 				end--
 			}
-			
+
 			if (end <= start + min_len) {
 				end = min_value(start + io_out_mtu, offset + len + 1)
 			}
-			
+
 			write(buf, start - 1, end - start)
 			start = end
 		}

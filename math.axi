@@ -34,7 +34,7 @@ double MATH_PI = 3.141592653589793
 
 // Precision required for processor intensive math functions. If accuracy is
 // not integral to their use this may be increased to improve performance.
-double MATH_PRECISION = 1.0e-13
+double MATH_PRECISION = 1.0e-6
 
 
 define_variable
@@ -252,6 +252,33 @@ define_function slong round(double x)
 }
 
 /**
+ * Returns a double value with a positive sign, greater than or equal to 0.0 
+ * and less than 1.0.
+ *
+ * @return			a pseudorandom double greater than or equal to 0.0 and 
+ *					less than 1.0
+ */
+define_function double random()
+{
+	stack_var char i
+	stack_var long hi
+	stack_var long low
+	
+	// Create a (psuedo) random mantissa
+	for (i = 32; i; i--) {
+		low = low + (random_number(2) << (i - 1))
+	}
+	for (i = 20; i; i--) {
+		hi = hi + (random_number(2) << (i - 1))
+	}
+	
+	// Add in an exponent of 0 to make sure we get full resolution
+	hi = hi + (1023 << 20)
+	
+	return math_build_double(hi, low) - 1
+}
+
+/**
  * Calculate the square root of the passed number.
  *
  * This function takes a log base 2 approximation then iterates a Babylonian
@@ -265,12 +292,6 @@ define_function double sqrt(double x)
 	stack_var long hi
 	stack_var long low
     stack_var double tmp
-	if (x == 0 ||
-		x == MATH_NEGATIVE_INFINITY ||
-		x == MATH_POSITIVE_INFINITY ||
-		x == MATH_NaN) {
-		return x
-	}
 	tmp = math_rshift_double(x)
 	hi = (1 << 29) + math_double_high_to_bits(tmp) - (1 << 19)
 	low = math_double_low_to_bits(tmp)
@@ -303,7 +324,7 @@ define_function float fast_inv_sqrt(float x)
  * Approximate the square root of the passed number based on the inverse square
  * root algorithm in mathInvSqrt(x). This is MUCH faster than sqrt(x) and
  * recommended over sqrt() for use anywhere a precise square root is not
- * required. Error is approx +/-0.15%.
+ * required. Error is approx +/-0.17%.
  *
  * @param	x		the float to find the square root of
  * @return			a float containing an approximation of the square root
