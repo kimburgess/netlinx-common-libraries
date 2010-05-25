@@ -19,7 +19,7 @@
  * 	Kim Burgess <kim.burgess@justice.qld.gov.au>
  *
  *
- * $Id: Math.axi 23 2010-05-12 16:29:43Z trueamx $
+ * $Id: $
  * tab-width: 4 columns: 80
  */
 
@@ -115,7 +115,7 @@ define_function test_start(char name[])
 		ncl_test.stats = ""
 		println("'Running test: ', name")
 	} else {
-		println("'Error starting ', name, ' test. ', ncl_test.name, 
+		println("'Error starting ', name, ' test. ', ncl_test.name,
 				' already running.'")
 	}
 }
@@ -141,7 +141,7 @@ define_function char test_end()
 {
 	stack_var char tmp[256]
 
-	println("'    ', itoa(ncl_test.num_passed), ' of ', 
+	println("'    ', itoa(ncl_test.num_passed), ' of ',
 			itoa(ncl_test.num_tests), ' tests passed'")
 	while (ncl_test.stats <> "") {
 		tmp = remove_string(ncl_test.stats, "$0D, $0A", 1)

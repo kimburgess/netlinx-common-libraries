@@ -19,7 +19,7 @@
  * Contributor(s):
  * 	Kim Burgess <kim.burgess@justice.qld.gov.au>
  *
- * $Id: Math.axi 23 2010-05-12 16:29:43Z trueamx $
+ * $Id: $
  * tab-width: 4 columns: 80
  */
 
@@ -40,7 +40,7 @@ long TEST_MATH_ITERATIONS = 1000			// number of times to execute each
 
 
 /**
- * Test functionality and execution speed of the math_is_whole_number() 
+ * Test functionality and execution speed of the math_is_whole_number()
  * function.
  *
  * @return			a boolean reflecting success
@@ -64,14 +64,14 @@ define_function char test_math_is_whole_number()
 		math_is_whole_number(test_data[i])
 	}
 	test_timer_stop(TEST_MATH_ITERATIONS)
-	
+
 
 	// Check special cases
 	test_check(math_is_whole_number(-1) == true, 'breaks on negative input')
 	test_check(math_is_whole_number(-1.5) == false, 'breaks on negative input')
 	test_check(math_is_whole_number(0) == true, 'breaks with 0 input')
 	test_check(math_is_whole_number(MATH_NaN) == false, 'breaks with NaN')
-	test_check(math_is_whole_number(MATH_NEGATIVE_INFINITY) == true, 
+	test_check(math_is_whole_number(MATH_NEGATIVE_INFINITY) == true,
 			'breaks with -inf')
 	test_check(math_is_whole_number(MATH_POSITIVE_INFINITY) == true,
 			'breaks with +inf')
@@ -98,7 +98,7 @@ define_function char test_random()
 		res[i] = random()
 	}
 	test_timer_stop(TEST_MATH_ITERATIONS)
-	
+
 
 	// Check for correct functionality
 	for (i = TEST_MATH_ITERATIONS; i; i--) {
