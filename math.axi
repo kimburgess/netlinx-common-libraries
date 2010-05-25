@@ -180,19 +180,49 @@ define_function double math_lshift_double(double x)
 }
 
 /**
- * Returns TRUE if the argument has no decimal component, otherwise returns
- * FALSE.
+ * Returns true if the argument has no decimal component, otherwise returns
+ * false. +/-Inf and 0 will return true, subnormal and NaN's will return
+ * false.
  *
- * @todo			look up the exponent of the number as stored in IEEE754
- *					format to all it to function over all values
  * @param	x		the double to check
  * @return			a boolean representing the number's 'wholeness'
  */
 define_function char math_is_whole_number(double x)
 {
-    stack_var slong wholeComponent
-    wholeComponent = type_cast(x)
-    return wholeComponent == x
+	stack_var char tmp
+	stack_var sinteger exp
+	stack_var long hi
+	stack_var long m_hi
+	stack_var long m_low
+	stack_var long mask
+	hi = math_double_high_to_bits(x)
+	exp = type_cast(((hi & $7FF00000) >> 20) - 1023)
+	m_hi = hi & $FFFFF
+	select {
+		active (exp == -1023 || exp == 1024): {
+			m_low = math_double_low_to_bits(x)
+			return (m_hi == 0 && m_low == 0)
+		}
+		active (exp < 0): {
+			return false
+		}
+		active (exp > 52): {
+			return true
+		}
+		active (exp > 20): {
+			for (tmp = type_cast(52 - exp); tmp; tmp--) {
+				mask = mask + (1 << (tmp - 1))
+			}
+			return (m_low & mask == 0)
+		}
+		active (1): {
+			m_low = math_double_low_to_bits(x)
+			for (tmp = type_cast(20 - exp); tmp; tmp--) {
+				mask = mask + (1 << (tmp - 1))
+			}
+			return (m_hi & mask == 0)
+		}
+	}
 }
 
 /**
@@ -252,10 +282,10 @@ define_function slong round(double x)
 }
 
 /**
- * Returns a double value with a positive sign, greater than or equal to 0.0 
+ * Returns a double value with a positive sign, greater than or equal to 0.0
  * and less than 1.0.
  *
- * @return			a pseudorandom double greater than or equal to 0.0 and 
+ * @return			a pseudorandom double greater than or equal to 0.0 and
  *					less than 1.0
  */
 define_function double random()
@@ -263,18 +293,13 @@ define_function double random()
 	stack_var char i
 	stack_var long hi
 	stack_var long low
-	
-	// Create a (psuedo) random mantissa
 	for (i = 32; i; i--) {
 		low = low + (random_number(2) << (i - 1))
 	}
 	for (i = 20; i; i--) {
 		hi = hi + (random_number(2) << (i - 1))
 	}
-	
-	// Add in an exponent of 0 to make sure we get full resolution
 	hi = hi + (1023 << 20)
-	
 	return math_build_double(hi, low) - 1
 }
 
@@ -292,6 +317,16 @@ define_function double sqrt(double x)
 	stack_var long hi
 	stack_var long low
     stack_var double tmp
+	if (x < 0) {
+		return MATH_NaN
+	}
+	if (x = 0 ||
+		x == 1 ||
+		//x == MATH_NaN ||
+		x == MATH_NEGATIVE_INFINITY ||
+		x == MATH_POSITIVE_INFINITY) {
+		return x
+	}
 	tmp = math_rshift_double(x)
 	hi = (1 << 29) + math_double_high_to_bits(tmp) - (1 << 19)
 	low = math_double_low_to_bits(tmp)
@@ -322,7 +357,7 @@ define_function float fast_inv_sqrt(float x)
 
 /**
  * Approximate the square root of the passed number based on the inverse square
- * root algorithm in mathInvSqrt(x). This is MUCH faster than sqrt(x) and
+ * root algorithm in fast_inv_sqrt(x). This is MUCH faster than sqrt(x) and
  * recommended over sqrt() for use anywhere a precise square root is not
  * required. Error is approx +/-0.17%.
  *

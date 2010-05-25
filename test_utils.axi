@@ -22,7 +22,7 @@
  * $Id: Math.axi 23 2010-05-12 16:29:43Z trueamx $
  * tab-width: 4 columns: 80
  */
- 
+
 program_name='test_utils'
 #if_not_defined __NCL_LIB_TEST_UTILS
 #define __NCL_LIB_TEST_UTILS
@@ -35,6 +35,21 @@ define_constant
 
 long TEST_TL = 1						// timeline to user for execution
 										// speed test timer
+
+
+define_type
+
+structure test_info {
+	char is_active						// boolean containing test state
+	char name[32]						// name of test
+	long num_tests						// number of test cases checked
+	long num_passed						// number test cases passed
+	char stats[1024]					// misc stats associate with the test
+}
+
+define_variable
+
+volatile test_info ncl_test
 
 
 /**
@@ -60,18 +75,107 @@ define_function char test_timer_start()
 }
 
 /**
- * Stops the speed execution test timer.
+ * Stops the speed execution test timer and add the averge unit execution
+ * speed to the test stats.
  *
- * @return				long containing the time (ms) the timer was run for
+ * @param	iterations	long containing the number of individual tests run
+ * @return				double containing the avg test run time
  */
-define_function long test_timer_stop()
+define_function double test_timer_stop(long iterations)
 {
 	stack_var long elapsed
+	stack_var double avg_speed
+
 	if (timeline_active(TEST_TL)) {
+		timeline_pause(TEST_TL)
 		elapsed = timeline_get(TEST_TL)
 		timeline_kill(TEST_TL)
 	}
-	return elapsed
+
+	avg_speed = 1.0 * elapsed / iterations
+
+	test_add_stat('avg. exec speed', format('%1.3f', avg_speed), "'ms (over ',
+			itoa(iterations), ' runs)'")
+
+	return avg_speed
+}
+
+/**
+ * Init everything required when starting a test.
+ *
+ * @param	name		the name of the test
+ */
+define_function test_start(char name[])
+{
+	if (ncl_test.is_active == false) {
+		ncl_test.is_active = true
+		ncl_test.name = name
+		ncl_test.num_tests = 0
+		ncl_test.num_passed = 0
+		ncl_test.stats = ""
+		println("'Running test: ', name")
+	} else {
+		println("'Error starting ', name, ' test. ', ncl_test.name, 
+				' already running.'")
+	}
+}
+
+/**
+ * Add a stat to be printed on test completion
+ *
+ * @param	name		a string containing the name of the test statistic
+ * @param	value		a stirng containing the stat result
+ * @param	units		a string containing the units the value uses
+ */
+define_function char test_add_stat(char name[], char value[], char units[])
+{
+	ncl_test.stats = "ncl_test.stats, $0D, $0A, name, ': ', value, units"
+}
+
+/**
+ * End the test and print results.
+ *
+ * @return				boolean reflecting success status
+ */
+define_function char test_end()
+{
+	stack_var char tmp[256]
+
+	println("'    ', itoa(ncl_test.num_passed), ' of ', 
+			itoa(ncl_test.num_tests), ' tests passed'")
+	while (ncl_test.stats <> "") {
+		tmp = remove_string(ncl_test.stats, "$0D, $0A", 1)
+		if (tmp <> "$0D, $0A") {
+			if (tmp == "") {
+				tmp = ncl_test.stats
+				ncl_test.stats = ""
+			} else {
+				tmp = left_string(tmp, length_string(tmp) - 2)
+			}
+			println("'    ', tmp")
+		}
+	}
+	println("' '")
+
+	ncl_test.is_active = false
+
+	return (ncl_test.num_passed == ncl_test.num_tests)
+}
+
+/**
+ * Init everything required when starting a test.
+ *
+ * @param	pass		boolean statement to check
+ * @param	msg			alert message if failure
+ */
+define_function test_check(char condition, char msg[])
+{
+	ncl_test.num_tests++
+	if (condition == true) {
+		ncl_test.num_passed++
+	} else {
+		println("'    ', msg")
+	}
 }
 
 /**
@@ -82,119 +186,6 @@ define_function long test_timer_stop()
 define_function double test_error(double estimate, double actual)
 {
 	return abs_value(estimate - actual) / actual * 100.0
-}
-
-/**
- * Generate a test report for a group of data which should lay between the
- * bounds of min and max.
- *
- * @param	name			name of the function undergoing testing
- * @param	results			array of doubles containing the test results
- * @param	min				minimum result value for pass condition (inclusive)
- * @param	max				maximum result value for pass condition (exclusive)
- * @param	total_time		total time (ms) it took to run all iterations
- * @return					boolean representing test pass status
- */
-define_function char test_report_double_range(char name[], double results[],
-		double min, double max, long total_time)
-{
-	stack_var long i
-	stack_var long iterations
-	stack_var long errs
-
-	iterations = max_length_array(results)
-
-	for (i = iterations; i; i--) {
-		if (results[i] < min || results[i] > max) {
-			errs++
-		}
-	}
-
-	return test_report(name, (errs == 0), iterations, total_time, 
-			"itoa(errs), ' errors'", "", "")
-}
-
-/**
- * Generates a test report for a doubles that should site within max_error of
- * the expected results.
- *
- * @param	name			name of the function undergoing testing
- * @param	results			array of doubles containing the actual results
- * @param	expected		array of doubles containing the expected results
- * @param	max_error		maximum % err for pass condition
- * @param	total_time		total time (ms) it took to run all iterations
- */
-define_function char test_report_double(char name[], double results[],
-		double expected[], float max_error, long total_time)
-{
-	stack_var long i
-	stack_var long iterations
-	stack_var double avg_speed
-	stack_var double avg_error
-
-	iterations = max_length_array(results)
-
-	for (i = iterations; i; i--) {
-		avg_error = avg_error + test_error(results[i], expected[i])
-	}
-	avg_error = avg_error / iterations
-
-	return test_report(name, (max_error > avg_error), iterations, total_time, 
-			"'avg. error ', format('%1.3f', avg_error), '%'", "", "")
-}
-
-/**
- * Outputs a test report and returns success / failure status.
- *
- * @param	name			name of the function undergoing testing
- * @param	pass			boolean indication success
- * @param	iterations		long containing the number of iterations tested
- * @param	total_time		long containing time (ms) the test ran for
- * @param	param1			misc result info
- * @param	param2			misc result info
- * @param	param3			misc result info
- * @return					boolean indicating success
- */
-define_function char test_report(char name[], char pass, long iterations,
-		long total_time, char param1[], char param2[], char param3[])
-{
-	stack_var char result[4]
-	stack_var char params[200]
-	stack_var double avg_speed
-
-	switch (pass) {
-		case true: result = "'PASS'"
-		case false: result = "'FAIL'"
-	}
-
-	avg_speed = 1.0 * total_time / iterations
-
-	if (param1 <> "") {
-		params = "', ', param1"
-	}
-
-	select {
-		active (params <> "" && param2 <> ""): {
-			params = "params, ', ', param2"
-		}
-		active (param2 <> ""): {
-			params = param2
-		}
-	}
-
-	select {
-		active (params <> "" && param3 <> ""): {
-			params = "params, ', ', param3"
-		}
-		active (param3 <> ""): {
-			params = param3
-		}
-	}
-
-	println("result, ': ', name, ' - avg. speed ', format('%1.3f', avg_speed),
-			'ms', params, ' (', itoa(iterations), ' iterations)'")
-
-	return pass
 }
 
 #end_if
