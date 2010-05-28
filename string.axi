@@ -150,7 +150,7 @@ define_function integer explode_quoted(char delim, char a[], char ret[][],
 				if (end) {
 					ret[i] = mid_string(a, start + 1, (end - start) - 1)
 					i++
-	
+
 					start = end + 1
 					continue
 				}
@@ -297,7 +297,7 @@ define_function char string_to_bool(char a[])
 		tmp == 'yes' ||
 		tmp == 'y' ||
 		tmp == '1') {
-		
+
 		return TRUE
     } else {
 		return FALSE
@@ -329,7 +329,7 @@ define_function char[STRING_RETURN_SIZE_LIMIT] int_array_to_string(
 			list = "list, delim, itoa(ints[item])"
 		}
     }
-	
+
 	if (length_string(list) > STRING_RETURN_SIZE_LIMIT) {
 		return string_size_error()
 	}
@@ -364,11 +364,11 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_get_list_item(char a[],
     }
 
     ret = end - start
-    
+
 	if (ret > STRING_RETURN_SIZE_LIMIT) {
 		return string_size_error()
     }
-	
+
 	return mid_string(a, start, ret)
 }
 
@@ -397,7 +397,7 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_get_key(char a[],
     if (retlen > STRING_RETURN_SIZE_LIMIT) {
 		return string_size_error()
     }
-	
+
 	return left_string(a, retlen)
 }
 
@@ -421,7 +421,7 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_get_value(char a[],
     if (retlen > STRING_RETURN_SIZE_LIMIT) {
 		return string_size_error()
     }
-	
+
 	return right_string(a, retlen)
 }
 
@@ -469,7 +469,7 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_get_between(char a[],
     if (retlen > STRING_RETURN_SIZE_LIMIT) {
 		return string_size_error()
     }
-	
+
 	return mid_string(a, start, retlen)
 }
 
@@ -544,7 +544,7 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_prefix_to_length(
 
 	if (len > STRING_RETURN_SIZE_LIMIT ||
 		length_string(a) > STRING_RETURN_SIZE_LIMIT) {
-		
+
 		return string_size_error()
 	}
 
@@ -576,10 +576,10 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_suffix_to_length(
 
     if (len > STRING_RETURN_SIZE_LIMIT ||
 		length_string(a) > STRING_RETURN_SIZE_LIMIT) {
-		
+
 		return string_size_error()
 	}
-	
+
 	if (length_string(a) < len) {
 		for (i = length_string(a); i < len; i++) {
 			ret = "value, ret"
@@ -595,7 +595,7 @@ define_function char[STRING_RETURN_SIZE_LIMIT] remove_string_by_length(
 	if (length_string(a) - len > STRING_RETURN_SIZE_LIMIT) {
 		return string_size_error()
 	}
-	
+
 	return remove_string(a, left_string(a, len), 1)
 }
 

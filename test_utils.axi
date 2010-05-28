@@ -178,14 +178,4 @@ define_function test_check(char condition, char msg[])
 	}
 }
 
-/**
- * Calculates the percentage error.
- *
- * @return				the percentage error (0.0 <= x <= 100.0)
- */
-define_function double test_error(double estimate, double actual)
-{
-	return abs_value(estimate - actual) / actual * 100.0
-}
-
 #end_if

@@ -34,7 +34,7 @@ double MATH_PI = 3.141592653589793
 
 // Precision required for processor intensive math functions. If accuracy is
 // not integral to their use this may be increased to improve performance.
-double MATH_PRECISION = 1.0e-6
+double MATH_PRECISION = 1.0e-13
 
 
 define_variable
@@ -43,6 +43,7 @@ define_variable
 volatile double MATH_NaN
 volatile double MATH_POSITIVE_INFINITY
 volatile double MATH_NEGATIVE_INFINITY
+volatile double MATH_TWO_52
 
 
 /**
@@ -55,23 +56,7 @@ volatile double MATH_NEGATIVE_INFINITY
  */
 define_function long math_raw_be_to_long(char x[4])
 {
-    stack_var char byte
-    stack_var long bits
-    FOR (byte = 4; byte; byte--) {
-		bits = bits + (x[byte] << ((4 - byte) << 3))
-    }
-    return bits
-}
-
-/**
- * Load a signed long's bit pattern into a long.
- *
- * @param	x		the slong to load
- * @return			a long filled with the bit pattern of the slong
- */
-define_function long math_slong_to_bits(slong x)
-{
-    return math_raw_be_to_long(raw_be(x))
+    return x[1] << 24 + x[2] << 16 + x[3] << 8 + x[4]
 }
 
 /**
@@ -82,7 +67,7 @@ define_function long math_slong_to_bits(slong x)
  */
 define_function long math_float_to_bits(float x)
 {
-    return math_raw_be_to_long(RAW_BE(x))
+    return math_raw_be_to_long(raw_be(x))
 }
 
 /**
@@ -156,7 +141,7 @@ define_function double math_rshift_double(double x)
 	stack_var long low
 	hi = math_double_high_to_bits(x)
 	low = math_double_low_to_bits(x)
-    low = low >> 1 + ((hi & 1) << 15)
+    low = low >> 1 + (hi & 1) << 15
     hi = hi >> 1
 	return math_build_double(hi, low)
 }
@@ -174,7 +159,7 @@ define_function double math_lshift_double(double x)
 	stack_var long low
 	hi = math_double_high_to_bits(x)
 	low = math_double_low_to_bits(x)
-    hi = ((hi & $7FFFFFFF) << 1) + ((low & $80000000) >> 15)
+    hi = (hi & $7FFFFFFF) << 1 + (low & $80000000) >> 15
     low = (low & $7FFFFFFF) << 1
 	return math_build_double(hi, low)
 }
@@ -185,44 +170,63 @@ define_function double math_lshift_double(double x)
  * false.
  *
  * @param	x		the double to check
- * @return			a boolean representing the number's 'wholeness'
+ * @return			a boolean, true if x is a mathematical integer
  */
-define_function char math_is_whole_number(double x)
+define_function char is_int(double x)
 {
-	stack_var char tmp
+	stack_var char i
 	stack_var sinteger exp
 	stack_var long hi
-	stack_var long m_hi
-	stack_var long m_low
+	stack_var long m
 	stack_var long mask
-	hi = math_double_high_to_bits(x)
-	exp = type_cast(((hi & $7FF00000) >> 20) - 1023)
-	m_hi = hi & $FFFFF
-	select {
-		active (exp == -1023 || exp == 1024): {
-			m_low = math_double_low_to_bits(x)
-			return (m_hi == 0 && m_low == 0)
-		}
-		active (exp < 0): {
-			return false
-		}
-		active (exp > 52): {
-			return true
-		}
-		active (exp > 20): {
-			for (tmp = type_cast(52 - exp); tmp; tmp--) {
-				mask = mask + (1 << (tmp - 1))
-			}
-			return (m_low & mask == 0)
-		}
-		active (1): {
-			m_low = math_double_low_to_bits(x)
-			for (tmp = type_cast(20 - exp); tmp; tmp--) {
-				mask = mask + (1 << (tmp - 1))
-			}
-			return (m_hi & mask == 0)
-		}
+	if (is_NaN(x)) {
+		return false
 	}
+	if (x >= MATH_TWO_52) {
+		return true
+	}
+	if (abs_value(x) < 1.0) {
+		return (abs_value(x) == 0)
+	}
+	hi = math_double_high_to_bits(x)
+	exp = type_cast((hi & $7FF00000) >> 20 - 1023)
+	if (exp > 20) {
+		m = math_double_low_to_bits(x)
+	} else {
+		m = hi & $FFFFF
+	}
+	for (i = type_cast(32 + (exp > 20) * 20 - exp); i; i--) {
+		mask = mask + 1 << (i - 1)
+	}
+	return (m & mask == 0)
+}
+
+/**
+ * Checks if a value is NaN.
+ *
+ * @param	x		a double to check
+ * @return			a boolean, true is x is NaN
+ */
+define_function char is_NaN(double x)
+{
+	stack_var long hi
+	hi = math_double_high_to_bits(x)
+	return (hi & $7FF00000) >> 20 == $7FF &&
+			(hi & $FFFFF || math_double_low_to_bits(x))
+}
+
+/**
+ * Checks if a value is either positive infinity or negative infinity.
+ *
+ * @param	x		a double to check
+ * @return			a boolean, true is x is infinite
+ */
+define_function char is_infinite(double x)
+{
+    stack_var long hi
+	hi = math_double_high_to_bits(x)
+	return (hi & $7FF00000) >> 20 == $7FF &&
+			!(hi & $FFFFF || math_double_low_to_bits(x))
 }
 
 /**
@@ -231,7 +235,8 @@ define_function char math_is_whole_number(double x)
  *
  * @param	x		a number to compare
  * @param	y		another number to compare to x
- * @return			a boolean specifying if x and y are within MATH_PRECISION of each other
+ * @return			a boolean specifying if x and y are within MATH_PRECISION
+ *					of each other
  */
 define_function char math_near(double x, double y)
 {
@@ -243,42 +248,72 @@ define_function char math_near(double x, double y)
  * less than the argument and is equal to a mathematical integer.
  *
  * @param	x		the double to round
- * @return			a signed long containing the rounded number
+ * @return			a double containing the rounded number
  */
-define_function slong ceil(double x)
+define_function double ceil(double x)
 {
-    if (x > 0 && !math_is_whole_number(x)) {
-		return type_cast(x + 1.0)
-    } else {
-		return type_cast(x)
-    }
+    return -floor(-x)
 }
 
 /**
  * Returns the largest (closest to positive infinity) long value that is not
  * greater than the argument and is equal to a mathematical integer.
  *
+ * @todo			remove dependancy on type_cast'ing to a slong to allow for
+ *					correct operation over all possible inputs
  * @param	x		a double to round
- * @return			a signed long containing the rounded number
+ * @return			a double containing the rounded number
  */
-define_function slong floor(double x)
+define_function double floor(double x)
 {
-    if (x < 0 && !math_is_whole_number(x)) {
-		return type_cast(x - 1.0)
-    } else {
-		return type_cast(x)
-    }
+	stack_var double tmp
+	stack_var slong ret
+	tmp = abs_value(x)
+	if (is_int(tmp)) {
+		return x
+	}
+	if (tmp < 1) {
+		if (x >= 0) {
+			return 0.0 * x
+		} else {
+			return -1.0
+		}
+	}
+	if (x < 0) {
+		ret = type_cast(x - 1.0)
+	} else {
+		ret = type_cast(x)
+	}
+	return ret
 }
 
 /**
  * Rounds a flouting point number to it's closest whole number.
  *
  * @param	x		a double to round
- * @return			a signed long containing the rounded number
+ * @return			a double containing the rounded number
  */
-define_function slong round(double x)
+define_function double round(double x)
 {
     return floor(x + 0.5)
+}
+
+/**
+ * Computes the remainder operation on two arguments as prescribed by the
+ * IEEE 754 standard.
+ *
+ * @param	x		a dividend
+ * @param	y		a divisor
+ * @return			a double equal to x - (y Q), where Q is the quotient of
+ *					x / y rounded to the nearest integer (if y = 0, NaN is
+ *					returned
+ */
+define_function double IEEEremainder(double x, double y)
+{
+	if (y == 0) {
+		return MATH_NaN
+	}
+	return x - y * round(x / y)
 }
 
 /**
@@ -294,12 +329,12 @@ define_function double random()
 	stack_var long hi
 	stack_var long low
 	for (i = 32; i; i--) {
-		low = low + (random_number(2) << (i - 1))
+		low = low + random_number(2) << (i - 1)
 	}
 	for (i = 20; i; i--) {
-		hi = hi + (random_number(2) << (i - 1))
+		hi = hi + random_number(2) << (i - 1)
 	}
-	hi = hi + (1023 << 20)
+	hi = hi + 1023 << 20
 	return math_build_double(hi, low) - 1
 }
 
@@ -307,8 +342,11 @@ define_function double random()
  * Calculate the square root of the passed number.
  *
  * This function takes a log base 2 approximation then iterates a Babylonian
- * refinement until the answer is within the math libraries defined precision.
+ * refinement until the answer is within the math libraries defined precision
+ * or exceeds 1000 steps of refinement.
  *
+ * @todo			re-write to allow for accurate (and faster) operation on
+ *					small (< 1.0e-5) input values
  * @param	x		the double to find the square root of
  * @return			a double containing the square root
  */
@@ -316,23 +354,24 @@ define_function double sqrt(double x)
 {
 	stack_var long hi
 	stack_var long low
+	stack_var double i
     stack_var double tmp
 	if (x < 0) {
 		return MATH_NaN
 	}
-	if (x = 0 ||
+	if (x == 0 ||
 		x == 1 ||
-		//x == MATH_NaN ||
-		x == MATH_NEGATIVE_INFINITY ||
-		x == MATH_POSITIVE_INFINITY) {
+		is_NaN(x) ||
+		is_infinite(x)) {
 		return x
 	}
 	tmp = math_rshift_double(x)
-	hi = (1 << 29) + math_double_high_to_bits(tmp) - (1 << 19)
+	hi = 1 << 29 + math_double_high_to_bits(tmp) - 1 << 19
 	low = math_double_low_to_bits(tmp)
 	tmp = math_build_double(hi, low)
-	while (!math_near(tmp * tmp, x)) {
-		tmp = 0.5 * (tmp + (x / tmp))
+	while (!math_near(tmp * tmp, x) && i < 1000) {
+		tmp = 0.5 * (tmp + x / tmp)
+		i++
 	}
 	return tmp
 }
@@ -343,16 +382,29 @@ define_function double sqrt(double x)
  * This method uses a integer shift and single Newton refinement aka Quake 3
  * method. Original algorithm by Greg Walsh.
  *
- * @param	x		the float to find the inverse square root of
- * @return			a float containing an approximation of the inverse square root
+ * @param	x		the double to find the inverse square root of
+ * @return			a double containing an approximation of the inverse square root
  */
-define_function float fast_inv_sqrt(float x)
+define_function double fast_inv_sqrt(double x)
 {
-    stack_var long bits
-    stack_var float tmp
-    bits = $5F3759DF - (math_float_to_bits(x) >> 1)
-    tmp = math_build_float(bits)
-    return tmp * (1.5 - 0.5 * x * tmp * tmp)
+	stack_var long hi
+	stack_var long low
+    stack_var long t_hi
+	stack_var long t_low
+    stack_var double res
+	stack_var double tmp
+	tmp = math_rshift_double(x)
+	t_hi = math_double_high_to_bits(tmp)
+	t_low = math_double_low_to_bits(tmp)
+	hi = $5FE6EC85 - t_hi
+	if (t_low > $E7DE30DA) {
+		hi = hi - (t_low - $E7DE30DA)
+		low = 0
+	} else {
+		low = $E7DE30DA - t_low
+	}
+    res = math_build_double(hi, low)
+    return res * (1.5 - 0.5 * x * res * res)
 }
 
 /**
@@ -361,10 +413,10 @@ define_function float fast_inv_sqrt(float x)
  * recommended over sqrt() for use anywhere a precise square root is not
  * required. Error is approx +/-0.17%.
  *
- * @param	x		the float to find the square root of
- * @return			a float containing an approximation of the square root
+ * @param	x		the double to find the square root of
+ * @return			a double containing an approximation of the square root
  */
-define_function float fast_sqrt(float x)
+define_function double fast_sqrt(double x)
 {
     return x * fast_inv_sqrt(x)
 }
@@ -396,7 +448,7 @@ define_function float math_log(float x, float base)
     }
     partial = 0.5
     tmp = tmp * tmp
-    while (partial > MATH_PRECISION) {
+    while (!math_near(partial, 0)) {
 		if (tmp >= base) {
 			decimal = decimal + partial
 			tmp = tmp / base
@@ -469,8 +521,9 @@ define_function float math_power(float x, integer n)
 
 DEFINE_START
 
-MATH_NaN = math_build_double($FFFFFFFF, $FFFFFFFF)
+MATH_NaN = math_build_double($7FFFFFFF, $FFFFFFFF)
 MATH_POSITIVE_INFINITY = math_build_double($7FF00000, $00000000)
 MATH_NEGATIVE_INFINITY = math_build_double($FFF00000, $00000000)
+MATH_TWO_52 = 1 << 52
 
 #end_if
