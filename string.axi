@@ -52,7 +52,7 @@ STRING_RETURN_SIZE_LIMIT	= 1024	// Maximum string return size
 define_function char[STRING_RETURN_SIZE_LIMIT] string_size_error()
 {
     // handle, alert, ignore etc here
-    println("'Return size to small in String.axi'")
+    println("'Maximum return size too small in String.axi'")
 
     return 'error'
 }

@@ -230,6 +230,26 @@ define_function char is_infinite(double x)
 }
 
 /**
+ * Checks if a string value contains only a numeric value.
+ *
+ * @param	a		a string to check
+ * @return			a boolean, true is a is numeric
+ * @todo			support signed numbers
+ */
+define_function char is_numeric(char a[])
+{
+    stack_var integer i
+	
+	for (i = 1; i <= length_string(a); i++) {
+		if (!(a[i] >= $30 && a[i] <= $39)) {
+			return 0
+		}		
+	}
+	
+	return 1
+}
+
+/**
  * Compares two numbers and return true if they are within MATH_PRECISION of
  * each other.
  *
@@ -519,11 +539,12 @@ define_function float math_power(float x, integer n)
 }
 
 
-DEFINE_START
-
-MATH_NaN = math_build_double($7FFFFFFF, $FFFFFFFF)
-MATH_POSITIVE_INFINITY = math_build_double($7FF00000, $00000000)
-MATH_NEGATIVE_INFINITY = math_build_double($FFF00000, $00000000)
-MATH_TWO_52 = 1 << 52
+define_start
+{
+	MATH_NaN = math_build_double($7FFFFFFF, $FFFFFFFF)
+	MATH_POSITIVE_INFINITY = math_build_double($7FF00000, $00000000)
+	MATH_NEGATIVE_INFINITY = math_build_double($FFF00000, $00000000)
+	MATH_TWO_52 = 1 << 52
+}
 
 #end_if
