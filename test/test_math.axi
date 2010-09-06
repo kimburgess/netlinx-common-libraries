@@ -630,8 +630,8 @@ define_function char test_sqrt()
 	// Check for correct functionality
 	for (i = TEST_MATH_ITERATIONS; i; i--) {
 		error = test_math_error(res[i] * res[i], test_data[i])
-		test_check(error <= 0.0001, 
-				"'exceeds maximum error (x = ', ftoa(test_data[i]), 
+		test_check(error <= 0.0001,
+				"'exceeds maximum error (x = ', ftoa(test_data[i]),
 				', error = ', ftoa(error), '%)'")
 		if (error > max_err) {
 			max_err = error
@@ -687,8 +687,8 @@ define_function char test_fast_inv_sqrt()
 	for (i = TEST_MATH_ITERATIONS; i; i--) {
 		error = test_math_error(test_data[i] * test_data[i] * res[i] * res[i],
 				test_data[i])
-		test_check(error <= 0.35, 
-				"'exceeds maximum error (x = ', ftoa(test_data[i]), 
+		test_check(error <= 0.35,
+				"'exceeds maximum error (x = ', ftoa(test_data[i]),
 				', error = ', ftoa(error), '%)'")
 		if (error > max_err) {
 			max_err = error
@@ -734,8 +734,8 @@ define_function char test_fast_sqrt()
 	// Check for correct functionality
 	for (i = TEST_MATH_ITERATIONS; i; i--) {
 		error = test_math_error(res[i] * res[i], test_data[i])
-		test_check(error <= 0.35, 
-				"'exceeds maximum error (x = ', ftoa(test_data[i]), 
+		test_check(error <= 0.35,
+				"'exceeds maximum error (x = ', ftoa(test_data[i]),
 				', error = ', ftoa(error), '%)'")
 		if (error > max_err) {
 			max_err = error

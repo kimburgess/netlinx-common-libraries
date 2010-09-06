@@ -589,10 +589,20 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_suffix_to_length(
     return "a, ret"
 }
 
+/**
+ * Returns the left substring of a string up to the specified number of
+ * characters.
+ * WARNING: this is a destructive removal - the returned substring will be
+ * removed from string 'a'.
+ *
+ * @param	a		a string to remove the substring from
+ * @param	len		the number of characters to remove
+ * @return			a string containing the first 'len' characters of 'a'
+ */
 define_function char[STRING_RETURN_SIZE_LIMIT] remove_string_by_length(
 		char a[], integer len)
 {
-	if (length_string(a) - len > STRING_RETURN_SIZE_LIMIT) {
+	if (len > STRING_RETURN_SIZE_LIMIT) {
 		return string_size_error()
 	}
 

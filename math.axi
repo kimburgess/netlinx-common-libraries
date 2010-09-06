@@ -239,13 +239,13 @@ define_function char is_infinite(double x)
 define_function char is_numeric(char a[])
 {
     stack_var integer i
-	
+
 	for (i = 1; i <= length_string(a); i++) {
 		if (!(a[i] >= $30 && a[i] <= $39)) {
 			return 0
-		}		
+		}
 	}
-	
+
 	return 1
 }
 
