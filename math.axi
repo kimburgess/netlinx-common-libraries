@@ -538,6 +538,28 @@ define_function float math_power(float x, integer n)
     return result
 }
 
+/**
+ * Encode a decimal value as binary-coded decimal (BCD).
+ *
+ * @param	x		an integer to encode as BCD
+ * @return			a long containing the BCD representation of x
+ */
+define_function long math_dec_to_bcd(integer x)
+{
+    stack_var long tmp
+	stack_var char i
+	stack_var char j
+	for (i = 16; i; i--) {
+		for (j = 0; j < 5; j++) {
+			if ((tmp >> (4 * j) & $F) > 4) {
+				tmp = tmp + (3 << (4 * j))
+			}
+		}
+		tmp = tmp << 1 | (x >> (i - 1) & 1)
+	}
+	return tmp
+}
+
 
 define_start
 {
