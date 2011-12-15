@@ -26,4 +26,4 @@ Want to help out? Awesome.
 
 Simply include the libraries in your project and use at will.
 
-This project is licensed under the MIT License. Feel free to use it, sell it, modify it, re-distribute - basically whatever the hell you like. See [LICENSE](https://github.com/KimBurgess/NetLinx-Common-Libraries/blob/master/LICENSE] for more info.
+This project is licensed under the MIT License. Feel free to use it, sell it, modify it, re-distribute - basically whatever the hell you like. See [LICENSE](https://github.com/KimBurgess/NetLinx-Common-Libraries/blob/master/LICENSE) for more info.
