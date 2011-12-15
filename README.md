@@ -18,7 +18,7 @@ Jorde Vorstenbosch <jordevorstenbosch@gmail.com>
 Want to help out? Awesome.
 
 1. Fork it.
-2. Make your changes / improvements / bug fixes etc (and ensure that you adhere to the [project style guide](https://github.com/KimBurgess/NetLinx-Common-Libraries/wiki/Code-Format-and-Commenting) whilst doing so.
+2. Make your changes / improvements / bug fixes etc (and ensure that you adhere to the [project style guide](https://github.com/KimBurgess/NetLinx-Common-Libraries/wiki/Code-Format-and-Commenting) whilst doing so).
 3. Submit a pull request.
 4. Win.
 
