@@ -1,13 +1,3 @@
-/**
- * Implementation of Dijkstra's algorithm for graph traversal.
- *
- * This is intended for use for pathing within complex signal network. After
- * defining the initial directed graph it can be utilize to generate optimum
- * paths between nodes. This way then be used to control matrix switching and
- * signal routing equipment.
- *
- * @author Kim Burgess <kim.burgess@justice.qld.gov.au>
- */
 program_name='graph'
 
 
