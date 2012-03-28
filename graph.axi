@@ -126,8 +126,8 @@ define_function integer graph_get_closest_unsettled_node(graph g) {
  * @param	node	the node ID of the node of interest
  * @return			an array containing the node ID's of adjacent unsettled
  *					nodes
- */ 
-define_function integer[GRAPH_MAX_ADJACENT_NODES] graph_get_neighbors(graph g, 
+ */
+define_function integer[GRAPH_MAX_ADJACENT_NODES] graph_get_neighbors(graph g,
 		integer node)
 {
 	stack_var integer i
