@@ -4,16 +4,20 @@ program_name='graph'
 
 
 define_constant
-MAX_NODES = 128
-MAX_EDGES = 1024
-MAX_ADJACENT_NODES = 16
-MAX_HOPS = 8
-NULL_NODE_ID = 0
-MAX_DISTANCE = $FFFF
+// Bounds for array sizes returned internally. These may be tweaked to optimise
+// memory utilization.
+GRAPH_MAX_NODES = 128
+GRAPH_MAX_EDGES = 1024
+GRAPH_MAX_ADJACENT_NODES = 16
+GRAPH_MAX_HOPS = 8
+
+// Internal constants
+GRAPH_NULL_NODE_ID = 0
+GRAPH_MAX_DISTANCE = $FFFF
 
 
 define_type
-structure node {
+structure graph_node {
 	integer id
 	char name[32]
 	char settled
@@ -21,7 +25,7 @@ structure node {
 	integer previous
 }
 
-structure edge {
+structure graph_edge {
 	integer id
 	integer source
 	integer destination
@@ -31,13 +35,13 @@ structure edge {
 structure graph {
 	integer nextNodeID
 	integer nextEdgeID
-	node nodes[MAX_NODES]
-	edge edges[MAX_EDGES]
+	graph_node nodes[GRAPH_MAX_NODES]
+	graph_edge edges[GRAPH_MAX_EDGES]
 }
 
 
 define_function integer defineNode(graph g, char name[32]) {
-	stack_var node newNode
+	stack_var graph_node newNode
 	g.nextNodeID++
 	newNode.id = g.nextNodeID
 	newNode.name = name
@@ -47,7 +51,7 @@ define_function integer defineNode(graph g, char name[32]) {
 }
 
 define_function integer defineWeightedEdge(graph g, integer source, integer destination, integer weight) {
-	stack_var edge newEdge
+	stack_var graph_edge newEdge
 	g.nextEdgeID++
 	newEdge.id = g.nextEdgeID
 	newEdge.source = source
@@ -64,10 +68,10 @@ define_function integer defineEdge(graph g, integer source, integer destination)
 
 define_function integer getClosestUnsettledNode(graph g) {
 	stack_var integer i
-	stack_var node n
-	stack_var node closest
+	stack_var graph_node n
+	stack_var graph_node closest
 
-	closest.distance = MAX_DISTANCE
+	closest.distance = GRAPH_MAX_DISTANCE
 
 	for (i = 1; i <= length_array(g.nodes); i++) {
 		n = g.nodes[i]
@@ -79,15 +83,15 @@ define_function integer getClosestUnsettledNode(graph g) {
 	return closest.id
 }
 
-define_function integer[MAX_ADJACENT_NODES] getNeighbors(graph g, integer n) {
+define_function integer[GRAPH_MAX_ADJACENT_NODES] getNeighbors(graph g, integer n) {
 	stack_var integer i
 	stack_var integer j
-	stack_var integer neighbors[MAX_ADJACENT_NODES]
-	stack_var edge e
+	stack_var integer neighbors[GRAPH_MAX_ADJACENT_NODES]
+	stack_var graph_edge e
 
 	for (i = length_array(g.edges); i > 0; i--) {
 		e = g.edges[i]
-		if (e.destination != NULL_NODE_ID) {
+		if (e.destination != GRAPH_NULL_NODE_ID) {
 			if (e.source == n && g.nodes[e.destination].settled == false) {
 				j++
 				neighbors[j] = e.destination
@@ -101,7 +105,7 @@ define_function integer[MAX_ADJACENT_NODES] getNeighbors(graph g, integer n) {
 
 define_function integer getDistance(graph g, integer source, integer destination) {
 	stack_var integer i
-	stack_var edge e
+	stack_var graph_edge e
 
 	for (i = 1; i <= length_array(g.edges); i++) {
 		e = g.edges[i]
@@ -110,7 +114,7 @@ define_function integer getDistance(graph g, integer source, integer destination
 		}
 	}
 
-	return MAX_DISTANCE
+	return GRAPH_MAX_DISTANCE
 }
 
 define_function computePaths(graph g, integer source) {
@@ -120,25 +124,25 @@ define_function computePaths(graph g, integer source) {
 
 	for (i = length_array(g.nodes); i > 0; i--) {
 		g.nodes[i].settled = false
-		g.nodes[i].distance = MAX_DISTANCE
-		g.nodes[i].previous = NULL_NODE_ID
+		g.nodes[i].distance = GRAPH_MAX_DISTANCE
+		g.nodes[i].previous = GRAPH_NULL_NODE_ID
 	}
 
 	g.nodes[source].distance = 0
 
 	while (true) {
-		stack_var integer adjacentNodes[MAX_ADJACENT_NODES]
+		stack_var integer adjacentNodes[GRAPH_MAX_ADJACENT_NODES]
 
 		n = getClosestUnsettledNode(g)
-		if (n == NULL_NODE_ID) break
-		if (g.nodes[n].distance == MAX_DISTANCE) break
+		if (n == GRAPH_NULL_NODE_ID) break
+		if (g.nodes[n].distance == GRAPH_MAX_DISTANCE) break
 
 		g.nodes[n].settled = true
 
 		adjacentNodes = getNeighbors(g, n)
 
 		for (i = 1; i <= length_array(adjacentNodes); i++) {
-			if (adjacentNodes[i] == NULL_NODE_ID) break
+			if (adjacentNodes[i] == GRAPH_NULL_NODE_ID) break
 
 			altDist = g.nodes[n].distance+ getDistance(g, n, adjacentNodes[i])
 			if (g.nodes[adjacentNodes[i]].distance > altDist) {
@@ -150,8 +154,8 @@ define_function computePaths(graph g, integer source) {
 	}
 }
 
-define_function integer[MAX_HOPS] getPath(graph g, integer destination) {
-	stack_var integer path[MAX_HOPS]
+define_function integer[GRAPH_MAX_HOPS] getPath(graph g, integer destination) {
+	stack_var integer path[GRAPH_MAX_HOPS]
 	stack_var integer step
 	stack_var integer hop
 
@@ -159,7 +163,7 @@ define_function integer[MAX_HOPS] getPath(graph g, integer destination) {
 	hop++
 	path[hop] = step
 
-	while (g.nodes[step].previous != NULL_NODE_ID) {
+	while (g.nodes[step].previous != GRAPH_NULL_NODE_ID) {
 		step = g.nodes[step].previous
 		hop++
 		path[hop] = step
