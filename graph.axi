@@ -1,4 +1,6 @@
 program_name='graph'
+#if_not_defined __NCL_LIB_GRAPH
+#define __NCL_LIB_GRAPH
 
 
 define_constant
@@ -166,3 +168,5 @@ define_function integer[MAX_HOPS] getPath(graph g, integer destination) {
 	set_length_array(path, hop)
 	return path
 }
+
+#end_if
