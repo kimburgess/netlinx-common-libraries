@@ -40,6 +40,13 @@ structure graph {
 }
 
 
+/**
+ * Creates a new node in the passed graph.
+ *
+ * @param	g		the graph to create the node in
+ * @param	name	the name of the node
+ * @return			an integer containing the node ID
+ */
 define_function integer graph_create_node(graph g, char name[32])
 {
 	stack_var graph_node newNode
@@ -51,6 +58,15 @@ define_function integer graph_create_node(graph g, char name[32])
 	return newNode.id
 }
 
+/**
+ * Defines a directed edge in the passed graph connecting the supplied edges.
+ *
+ * @param	g				the graph to create the edge in
+ * @param	source			the node ID of the edge source
+ * @param	desitination	the node ID of the edge desitination
+ * @param	weight			the initial weighting to assign to the edge
+ * @return					an integer containing the edge ID
+ */
 define_function integer graph_create_weighted_edge(graph g, integer source,
 		integer destination, integer weight)
 {
@@ -65,12 +81,27 @@ define_function integer graph_create_weighted_edge(graph g, integer source,
 	return newEdge.id
 }
 
+/**
+ * Defines a directed edge in the passed graph connecting the supplied edges
+ * with a default weighting.
+ *
+ * @param	g			the graph to create the edge in
+ * @param	source		the node ID of the edge source
+ * @param	destination	the node ID of the edge desitination
+ * @return				an integer containing the edge ID
+ */
 define_function integer graph_create_edge(graph g, integer source,
 		integer destination)
 {
 	return graph_create_weighted_edge(g, source, destination, 1)
 }
 
+/**
+ * Finds the closest unsettled node in the passed graph.
+ *
+ * @param	g		the graph to search
+ * @return			an integer containg the closest unsettled node ID
+ */
 define_function integer graph_get_closest_unsettled_node(graph g) {
 	stack_var integer i
 	stack_var graph_node n
@@ -88,6 +119,14 @@ define_function integer graph_get_closest_unsettled_node(graph g) {
 	return closest.id
 }
 
+/**
+ * Finds the unsettled neighbours of the passed node.
+ *
+ * @param	g		the graph to search
+ * @param	node	the node ID of the node of interest
+ * @return			an array containing the node ID's of adjacent unsettled
+ *					nodes
+ */ 
 define_function integer[GRAPH_MAX_ADJACENT_NODES] graph_get_neighbors(graph g, 
 		integer node)
 {
@@ -110,6 +149,14 @@ define_function integer[GRAPH_MAX_ADJACENT_NODES] graph_get_neighbors(graph g,
 	return neighbors
 }
 
+/**
+ * Finds the distance (/weight) of the edge connecting the passed nodes.
+ *
+ * @param	g			the graph to search
+ * @param	source		the edge source node ID
+ * @param	destination	the edge destination node ID
+ * @return				the weight of the joining edge
+ */
 define_function integer graph_get_distance(graph g, integer source,
 		integer destination)
 {
@@ -126,6 +173,15 @@ define_function integer graph_get_distance(graph g, integer source,
 	return GRAPH_MAX_DISTANCE
 }
 
+/**
+ * Traverse the passed graph and compute all paths from the passed source node.
+ *
+ * This uses an implementation of Dijkstra's algorithm. After traversal paths
+ * are cached within the graph.
+ *
+ * @param	g		the graph to traverse
+ * @param	source	the node ID of the source to calculate paths from
+ */
 define_function graph_compute_paths(graph g, integer source)
 {
 	stack_var integer i
@@ -165,6 +221,16 @@ define_function graph_compute_paths(graph g, integer source)
 	}
 }
 
+/**
+ * Find the optimum path to the passed destination node based on a previously
+ * computed graph.
+ *
+ * @param	g			a previously computed (using graph_compute_paths())
+ *						graph
+ * @param	destination	the ID of the destination node to find the path to
+ * @return				an array containing the nodes that form the optimum path
+ *						to the destination node
+ */
 define_function integer[GRAPH_MAX_HOPS] graph_get_shortest_path(graph g,
 		integer destination)
 {
