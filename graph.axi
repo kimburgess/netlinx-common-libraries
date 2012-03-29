@@ -18,14 +18,12 @@ GRAPH_MAX_DISTANCE = $FFFF
 
 define_type
 structure graph_node {
-	integer id
 	char settled
 	integer distance
 	integer previous
 }
 
 structure graph_edge {
-	integer id
 	integer source
 	integer destination
 	integer weight
@@ -49,10 +47,9 @@ define_function integer graph_create_node(graph g)
 {
 	stack_var graph_node newNode
 	g.nextNodeID++
-	newNode.id = g.nextNodeID
-	g.nodes[newNode.id] = newNode
+	g.nodes[g.nextNodeID] = newNode
 	set_length_array(g.nodes, g.nextNodeID + 1)
-	return newNode.id
+	return g.nextNodeID
 }
 
 /**
@@ -69,13 +66,12 @@ define_function integer graph_create_edge(graph g, integer source,
 {
 	stack_var graph_edge newEdge
 	g.nextEdgeID++
-	newEdge.id = g.nextEdgeID
 	newEdge.source = source
 	newEdge.destination = destination
 	newEdge.weight = weight
-	g.edges[newEdge.id] = newEdge
+	g.edges[g.nextEdgeID] = newEdge
 	set_length_array(g.edges, g.nextEdgeID + 1)
-	return newEdge.id
+	return g.nextEdgeID
 }
 
 /**
@@ -86,19 +82,18 @@ define_function integer graph_create_edge(graph g, integer source,
  */
 define_function integer graph_get_closest_unsettled_node(graph g) {
 	stack_var integer i
-	stack_var graph_node n
-	stack_var graph_node closest
+	stack_var integer closest
 
-	closest.distance = GRAPH_MAX_DISTANCE
+	closest = GRAPH_MAX_DISTANCE
 
 	for (i = 1; i <= length_array(g.nodes); i++) {
-		n = g.nodes[i]
-		if (n.settled == false && (n.distance < closest.distance)) {
-			closest = n
+		if (g.nodes[i].settled == false && 
+				(g.nodes[i].distance < g.nodes[closest].distance)) {
+			closest = i
 		}
 	}
 
-	return closest.id
+	return closest
 }
 
 /**
