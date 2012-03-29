@@ -84,12 +84,14 @@ define_function integer graph_get_closest_unsettled_node(graph g) {
 	stack_var integer i
 	stack_var integer closest
 
-	closest = GRAPH_MAX_DISTANCE
-
 	for (i = 1; i <= length_array(g.nodes); i++) {
-		if (g.nodes[i].settled == false && 
-				(g.nodes[i].distance < g.nodes[closest].distance)) {
-			closest = i
+		if (g.nodes[i].settled == false &&
+				(g.nodes[i].distance < GRAPH_MAX_DISTANCE)) {
+			if (closest == GRAPH_NULL_NODE_ID) {
+				closest = i
+			} else if (g.nodes[i].distance < g.nodes[closest].distance) {
+				closest = i
+			}
 		}
 	}
 
