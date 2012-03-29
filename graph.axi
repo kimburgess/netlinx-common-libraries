@@ -64,7 +64,7 @@ define_function integer graph_create_node(graph g)
  * @param	weight			the initial weighting to assign to the edge
  * @return					an integer containing the edge ID
  */
-define_function integer graph_create_weighted_edge(graph g, integer source,
+define_function integer graph_create_edge(graph g, integer source,
 		integer destination, integer weight)
 {
 	stack_var graph_edge newEdge
@@ -76,21 +76,6 @@ define_function integer graph_create_weighted_edge(graph g, integer source,
 	g.edges[newEdge.id] = newEdge
 	set_length_array(g.edges, g.nextEdgeID + 1)
 	return newEdge.id
-}
-
-/**
- * Defines a directed edge in the passed graph connecting the supplied edges
- * with a default weighting.
- *
- * @param	g			the graph to create the edge in
- * @param	source		the node ID of the edge source
- * @param	destination	the node ID of the edge desitination
- * @return				an integer containing the edge ID
- */
-define_function integer graph_create_edge(graph g, integer source,
-		integer destination)
-{
-	return graph_create_weighted_edge(g, source, destination, 1)
 }
 
 /**
