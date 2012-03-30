@@ -18,12 +18,15 @@ GRAPH_MAX_DISTANCE = $FFFF
 
 define_type
 structure graph_node {
+	integer id
+	char name[32]
 	char settled
 	integer distance
 	integer previous
 }
 
 structure graph_edge {
+	integer id
 	integer source
 	integer destination
 	integer weight
@@ -43,13 +46,15 @@ structure graph {
  * @param	g		the graph to create the node in
  * @return			an integer containing the node ID
  */
-define_function integer graph_create_node(graph g)
+define_function integer graph_create_node(graph g, char name[32])
 {
 	stack_var graph_node newNode
 	g.nextNodeID++
-	g.nodes[g.nextNodeID] = newNode
+	newNode.id = g.nextNodeID
+	newNode.name = name
+	g.nodes[newNode.id] = newNode
 	set_length_array(g.nodes, g.nextNodeID + 1)
-	return g.nextNodeID
+	return newNode.id
 }
 
 /**
@@ -66,12 +71,13 @@ define_function integer graph_create_edge(graph g, integer source,
 {
 	stack_var graph_edge newEdge
 	g.nextEdgeID++
+	newEdge.id = g.nextEdgeID
 	newEdge.source = source
 	newEdge.destination = destination
 	newEdge.weight = weight
-	g.edges[g.nextEdgeID] = newEdge
+	g.edges[newEdge.id] = newEdge
 	set_length_array(g.edges, g.nextEdgeID + 1)
-	return g.nextEdgeID
+	return newEdge.id
 }
 
 /**
@@ -82,20 +88,19 @@ define_function integer graph_create_edge(graph g, integer source,
  */
 define_function integer graph_get_closest_unsettled_node(graph g) {
 	stack_var integer i
-	stack_var integer closest
+	stack_var graph_node n
+	stack_var graph_node closest
+
+	closest.distance = GRAPH_MAX_DISTANCE
 
 	for (i = 1; i <= length_array(g.nodes); i++) {
-		if (g.nodes[i].settled == false &&
-				(g.nodes[i].distance < GRAPH_MAX_DISTANCE)) {
-			if (closest == GRAPH_NULL_NODE_ID) {
-				closest = i
-			} else if (g.nodes[i].distance < g.nodes[closest].distance) {
-				closest = i
-			}
+		n = g.nodes[i]
+		if (n.settled == false && (n.distance < closest.distance)) {
+			closest = n
 		}
 	}
 
-	return closest
+	return closest.id
 }
 
 /**
@@ -189,7 +194,7 @@ define_function graph_compute_paths(graph g, integer source)
 		for (i = 1; i <= length_array(adjacentNodes); i++) {
 			if (adjacentNodes[i] == GRAPH_NULL_NODE_ID) break
 
-			altDist = g.nodes[n].distance+ graph_get_distance(g, n,
+			altDist = g.nodes[n].distance + graph_get_distance(g, n,
 					adjacentNodes[i])
 			if (g.nodes[adjacentNodes[i]].distance > altDist) {
 				g.nodes[adjacentNodes[i]].distance = altDist
