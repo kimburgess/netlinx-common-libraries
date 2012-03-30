@@ -19,7 +19,6 @@ GRAPH_MAX_DISTANCE = $FFFF
 define_type
 structure graph_node {
 	integer id
-	char name[32]
 	char settled
 	integer distance
 	integer previous
@@ -46,12 +45,11 @@ structure graph {
  * @param	g		the graph to create the node in
  * @return			an integer containing the node ID
  */
-define_function integer graph_create_node(graph g, char name[32])
+define_function integer graph_create_node(graph g)
 {
 	stack_var graph_node newNode
 	g.nextNodeID++
 	newNode.id = g.nextNodeID
-	newNode.name = name
 	g.nodes[newNode.id] = newNode
 	set_length_array(g.nodes, g.nextNodeID + 1)
 	return newNode.id
