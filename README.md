@@ -24,7 +24,7 @@ Want to help out? Awesome.
 
 # Usage
 
-A convenience include has been provided to simply inclusion off all libraries. Ensure that the libraries are placed within a directory in your projects compile path then include them prior to referencing in your project code.
+A convenience include has been provided to simplify usage. Ensure that the libraries are placed within your project's compile path then include prior to utilizing provided functionality within your project code.
 
     include 'netlinx-common-libraries'
 
