@@ -24,6 +24,10 @@ Want to help out? Awesome.
 
 # Usage
 
-Simply include the libraries in your project and use at will.
+A convenience include has been provided to simply inclusion off all libraries. Ensure that the libraries are placed within a directory in your projects compile path then include them prior to referencing in your project code.
+
+    include 'netlinx-common-libraries'
+
+Alternatively, individually specify the library components that you require. Any cross include dependencies within the NetLinx Common Libraries are handled internally.
 
 This project is licensed under the MIT License. Feel free to use it, sell it, modify it, re-distribute - basically whatever the hell you like. See [LICENSE](https://github.com/KimBurgess/NetLinx-Common-Libraries/blob/master/LICENSE) for more info.
