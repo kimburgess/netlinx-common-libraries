@@ -111,11 +111,6 @@ define_function integer explode_quoted(char delim, char a[], char ret[][],
     i = 1
 
     while (start <= length_string(a)) {
-		if (a[start] == delim) {			// skip delimiter
-			start++
-			continue
-		}
-
 		if (quote) {
 			if (a[start] == quote) {				// handle quotes
 				end = find_string(a, "quote", start + 1)
