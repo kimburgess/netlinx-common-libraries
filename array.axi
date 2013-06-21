@@ -88,7 +88,7 @@ define_function double mind(double list[])
 	stack_var double val
 
 	val = MATH_POSITIVE_INFINITY;
-    for (i = 1; i <= max_length_array(list); i++) {
+	for (i = 1; i <= max_length_array(list); i++) {
 		if (list[i] < val) {
 			val = list[i];
 		}
@@ -110,7 +110,7 @@ define_function double maxd(double list[])
 	stack_var double val
 
 	val = MATH_NEGATIVE_INFINITY;
-    for (i = 1; i <= max_length_array(list); i++) {
+	for (i = 1; i <= max_length_array(list); i++) {
 		if (list[i] > val) {
 			val = list[i];
 		}
