@@ -28,14 +28,6 @@ define_function integer array_index(dev item, dev list[])
 }
 
 /**
- * Stub for future qsort function.
- */
-define_function qsort()
-{
-
-}
-
-/**
  * Finds the minimum value in an integer array
  *
  * @param	list		array of integers
