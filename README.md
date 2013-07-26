@@ -2,16 +2,16 @@
 
 Currently the project provides a math library, string manipulation library, time and date library, array utils, a managed debug messaging library and an associated console output library.
 
-The project is still in a pre-release stage and as such the API should not be considered stable.
+# Contributors
+[Kim Burgess](http://kimburgess.info)
 
-# Contributers
-Kim Burgess <kim.burgess@justice.qld.gov.au>
+[true](mailto:amx@trueserve.org)
 
-true <amx@trueserve.org>
+[Jeff Spire](http://spireintegrated.com/)
 
-Jeff Spire <jskalny@spireintegrated.com>
+[Jorde Vorstenbosch](mailto:jordevorstenbosch@gmail.com)
 
-Jorde Vorstenbosch <jordevorstenbosch@gmail.com>
+[Andy Dixon](https://github.com/PsyenceFact)
 
 # Contributing
 
