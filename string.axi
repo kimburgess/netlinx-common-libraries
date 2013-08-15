@@ -429,9 +429,19 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_get_between(char a[],
     stack_var integer end
     stack_var integer retlen
 
-    start = find_string(a, left, 1) + length_string(left)
+    start = find_string(a, left, 1)
+	if (start) {
+		start = start + length_string(left)
+	} else {
+		return ''
+	}
+	
 	end = find_string(a, right, start)
-    retlen = end - start
+    if (!end) {
+		return ''
+	}
+	
+	retlen = end - start
 
     if (retlen > STRING_RETURN_SIZE_LIMIT) {
 		return string_size_error()
