@@ -435,12 +435,12 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_get_between(char a[],
 	} else {
 		return ''
 	}
-	
+
 	end = find_string(a, right, start)
     if (!end) {
 		return ''
 	}
-	
+
 	retlen = end - start
 
     if (retlen > STRING_RETURN_SIZE_LIMIT) {
