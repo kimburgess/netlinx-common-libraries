@@ -678,7 +678,7 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_replace(char a[],
 		end = find_string(a, search, start)
 	}
 
-	ret = "ret, right_string(a, length_string(a) - start - 1)"
+	ret = "ret, right_string(a, length_string(a) - start + 1)"
 
 	return ret
 }
