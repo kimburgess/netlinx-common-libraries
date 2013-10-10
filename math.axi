@@ -535,6 +535,23 @@ define_function long math_dec_to_bcd(integer x)
 	return tmp
 }
 
+/**
+ * Map a value within a set of original bounds to its equivalent given a
+ * secondady set of bound.
+ *
+ * @param	x		the float to map
+ * @param	fromMin	the original lower bound
+ * @param	fomMax	the original upper bound
+ * @param	toMin	the lower bound to map to
+ * @param	toMax	the upper bound to map to
+ * @return			a float containing x mapped to its equivalent value within
+ *					the new bounds
+ */
+define_function float math_map_range(float x, float fromMin, float fromMax,
+		float toMin, float toMax) {
+	return (x - fromMin) * (toMax - toMin) / (fromMax - fromMin) + toMin
+}
+
 
 define_start
 {

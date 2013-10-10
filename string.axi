@@ -111,11 +111,6 @@ define_function integer explode_quoted(char delim, char a[], char ret[][],
     i = 1
 
     while (start <= length_string(a)) {
-		if (a[start] == delim) {			// skip delimiter
-			start++
-			continue
-		}
-
 		if (quote) {
 			if (a[start] == quote) {				// handle quotes
 				end = find_string(a, "quote", start + 1)
@@ -434,9 +429,19 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_get_between(char a[],
     stack_var integer end
     stack_var integer retlen
 
-    start = find_string(a, left, 1) + length_string(left)
+    start = find_string(a, left, 1)
+	if (start) {
+		start = start + length_string(left)
+	} else {
+		return ''
+	}
+
 	end = find_string(a, right, start)
-    retlen = end - start
+    if (!end) {
+		return ''
+	}
+
+	retlen = end - start
 
     if (retlen > STRING_RETURN_SIZE_LIMIT) {
 		return string_size_error()
@@ -657,7 +662,7 @@ define_function char[STRING_RETURN_SIZE_LIMIT] urlencode(char a[])
  *						that was matched (0 if not found)
  */
 define_function integer find_string_multi(char haystack[], char needles[][],
-	integer start)
+		integer start)
 {
     stack_var integer i
 	stack_var integer len
@@ -671,6 +676,67 @@ define_function integer find_string_multi(char haystack[], char needles[][],
 	}
 
 	return 0
+}
+
+/**
+ * Replace all occurances of a substring with another string.
+ *
+ * @param	a			the string to search
+ * @param	search		the substring to replace
+ * @param	replace		the replacement subtring
+ * @return				'a' with all occurances of 'search' replaced by the
+ *						contents of 'replace'
+ */
+define_function char[STRING_RETURN_SIZE_LIMIT] string_replace(char a[],
+		char search[], char replace[])
+{
+	stack_var integer start
+	stack_var integer end
+	stack_var char ret[STRING_RETURN_SIZE_LIMIT]
+
+	if (length_string(a) > STRING_RETURN_SIZE_LIMIT) {
+		return string_size_error()
+    }
+
+	start = 1
+	end = find_string(a, search, start)
+
+	while (end) {
+		ret = "ret, mid_string(a, start, end - start), replace"
+		start = end + length_string(search)
+		end = find_string(a, search, start)
+	}
+
+	ret = "ret, right_string(a, length_string(a) - start + 1)"
+
+	return ret
+}
+
+/**
+ * Reverse a string.
+ *
+ * @param	a			the string to reverse
+ * @return				the contents of 'a' with the character order reversed
+ */
+define_function char[STRING_RETURN_SIZE_LIMIT] string_reverse(char a[])
+{
+	stack_var integer i
+	stack_var integer len
+	stack_var char ret[STRING_RETURN_SIZE_LIMIT]
+
+	len = length_string(a)
+
+	if (len > STRING_RETURN_SIZE_LIMIT) {
+		return string_size_error()
+    }
+
+	for (i = len; i; i--) {
+		ret[(len - i) + 1] = a[i];
+	}
+
+	set_length_string(ret, len);
+
+	return ret
 }
 
 #end_if
