@@ -25,15 +25,15 @@ define_function char test_string_get_between(char a[],
 	return test_end();
 }
 
-define_function char test_istring_get_between(char a[],
+define_function char test_string_ci_get_between(char a[],
 		char left[], char right[])
 {
 	stack_var long i
 	
-	println("'Running istring_get_between(',a, ',',left,', ',right,')'")
+	println("'Running string_ci_get_between(',a, ',',left,', ',right,')'")
 	test_timer_start()
 	for (i = TEST_STRING_ITERATIONS; i; i--) {
-		istring_get_between(a, left, right)
+		string_ci_get_between(a, left, right)
 	}
 	test_timer_stop(TEST_STRING_ITERATIONS)
 	return test_end();
@@ -48,7 +48,7 @@ define_function test_string()
 	println("'Running string library test suite.'")
 	println("' '")
 	test_string_get_between('http://site.com/', 'http://', '/');
-	test_istring_get_between('http://site.com/', 'HTTP://', '/');
+	test_string_ci_get_between('http://site.com/', 'HTTP://', '/');
 }
 
 #end_if
