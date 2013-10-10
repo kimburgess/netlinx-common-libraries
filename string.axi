@@ -450,6 +450,35 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_get_between(char a[],
 	return mid_string(a, start, retlen)
 }
 
+/**
+ * Gets the first instance of a string contained within the bounds of two
+ * substrings, case is not sensitive for left and right
+ *
+ * @param	a		a string to split, max size is 100 kilobytes
+ * @param	left	the character sequence marking the left bound
+ * @param	right	the character sequence marking the right bound
+ * @return			a string contained within the boundary sequences
+ */
+define_function char[STRING_RETURN_SIZE_LIMIT] istring_get_between(char a[],
+		char left[], char right[])
+{
+    stack_var integer start
+    stack_var integer end
+    stack_var integer retlen
+	stack_var char	  a_copy[STRING_RETURN_SIZE_LIMIT*100];
+	
+	a_copy = lower_string(a)
+    start = find_string(a_copy, lower_string(left), 1) + length_string(left)
+	end = find_string(a_copy, lower_string(right), start)
+    retlen = end - start
+
+    if (retlen > STRING_RETURN_SIZE_LIMIT) {
+		return string_size_error()
+    }
+
+	return mid_string(a, start, retlen)
+}
+
 
 /**
  * Returns a copy of a string with the first alpha character capitalized.
