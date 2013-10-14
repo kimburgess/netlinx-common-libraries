@@ -21,7 +21,7 @@ STRING_RETURN_SIZE_LIMIT	= 1024	// Maximum string return size
  *
  * @return		An error string.
  */
-define_function char[0] string_size_error()
+define_function char[1] string_size_error()
 {
     // handle, alert, ignore etc here
     println("'Maximum return size too small in String.axi'")
