@@ -4,7 +4,12 @@ program_name='array'
 
 
 include 'math'
+include 'io'
 
+
+define_function array_function_deprecated() {
+	
+}
 
 /**
  * Finds the index for an matching entry in an array.
