@@ -7,13 +7,16 @@ include 'math'
 include 'io'
 
 
-define_function array_function_deprecated() {
+define_function array_function_deprecated(char old[64], char new[64]) {
+	
+	println("'Warning, the array function ',old,'() is deprecated',
+				', please use ', new, '()'");
 	
 }
 
 /**
- * Finds the index for an matching entry in an array.
- *
+ * Finds the index for any matching device entry in an array.
+ * @deprecated
  * @param	item		item to find in the array
  * @param	list		array of items
  *
@@ -21,8 +24,85 @@ define_function array_function_deprecated() {
  */
 define_function integer array_index(dev item, dev list[])
 {
-    stack_var integer i
+	array_function_deprecated('array_index', 'array_device_index');
+	return array_device_index(item, list);
+}
 
+/**
+ * Finds the index for any matching device entry in an array.
+ *
+ * @param	item		item to find in the array
+ * @param	list		array of items
+ *
+ * @return				the index of the matching value, or 0 if no match
+ */
+define_function integer array_device_index(dev item, dev list[])
+{
+    stack_var integer i
+	
+    for (i = 1; i <= max_length_array(list); i++) {
+		if (item == list[i]) {
+			return i
+		}
+    }
+
+    return 0
+}
+
+/**
+ * Finds the index for any matching integer entry in an array.
+ *
+ * @param	item		item to find in the array
+ * @param	list		array of items
+ *
+ * @return				the index of the matching value, or 0 if no match
+ */
+define_function integer array_integer_index(integer item, integer list[])
+{
+    stack_var integer i
+	
+    for (i = 1; i <= max_length_array(list); i++) {
+		if (item == list[i]) {
+			return i
+		}
+    }
+
+    return 0
+}
+
+/**
+ * Finds the index for any matching double entry in an array.
+ *
+ * @param	item		item to find in the array
+ * @param	list		array of items
+ *
+ * @return				the index of the matching value, or 0 if no match
+ */
+define_function integer array_double_index(double item, double list[])
+{
+    stack_var integer i
+	
+    for (i = 1; i <= max_length_array(list); i++) {
+		if (item == list[i]) {
+			return i
+		}
+    }
+
+    return 0
+}
+
+/**
+ * Finds the index for any matching string entry in an array.
+ *
+ * @param	item		item to find in the array
+ * @param	list		array of items
+ *
+ * @return				the index of the matching value, or 0 if no match
+ */
+define_function integer array_string_index(char item[], char list[][])
+{
+    stack_var integer i
+	
     for (i = 1; i <= max_length_array(list); i++) {
 		if (item == list[i]) {
 			return i
