@@ -65,13 +65,31 @@ define_function debug_set_level(char x)
  */
 define_function debug_msg(char msg_level, char msg[])
 {
+	stack_var long i,l;
+	stack_var char c;
+	stack_var char out[255];
+
 	if (msg_level < DEBUG_ERROR || msg_level > DEBUG_INFO) {
 		debug_msg(DEBUG_ERROR, "'invalid debug level specified - ', msg")
 		return
 	}
-    if (msg_level <= debug_level) {
-		println("upper_string(debug_get_level_string(msg_level)),': ', msg")
-    }
+	if (msg_level <= debug_level) {
+		if (FIND_STRING(msg, "$00", 1) > 0){
+			out = ""
+			l = LENGTH_STRING(msg)
+			for (i = 0; i < l; i++){
+				c = GET_BUFFER_CHAR(msg)
+				if(c == "$00"){
+					out = "out,'$00'"
+				}else{
+					out = "out,c"
+				}
+			}
+			println(out)
+		}else{
+			println("upper_string(debug_get_level_string(msg_level)),': ', msg")
+		}
+	}
 }
 
 #end_if
