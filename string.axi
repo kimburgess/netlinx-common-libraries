@@ -710,4 +710,28 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_reverse(char a[])
 	return ret
 }
 
+/**
+ * Check is a string starts with another string.
+ *
+ * @param	a			the string to check
+ * @param	search		the substring to search for
+ * @return				a boolean, true if 'a' begins with 'search'
+ */
+define_function char string_starts_with(char a[], char search[])
+{
+	return left_string(a, length_string(search)) == search;
+}
+
+/**
+ * Check is a string end with another string.
+ *
+ * @param	a			the string to check
+ * @param	search		the substring to search for
+ * @return				a boolean, true if 'a' ends with 'search'
+ */
+define_function char string_ends_with(char a[], char search[])
+{
+	return right_string(a, length_string(search)) == search;
+}
+
 #end_if
