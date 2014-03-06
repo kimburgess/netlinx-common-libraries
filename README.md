@@ -13,6 +13,8 @@ Currently the project provides a math library, string manipulation library, time
 
 [Andy Dixon](https://github.com/PsyenceFact)
 
+[Motaz Abuthiab](mailto:moty66@gmail.com)
+
 # Contributing
 
 Want to help out? Awesome.
