@@ -21,12 +21,12 @@ STRING_RETURN_SIZE_LIMIT	= 1024	// Maximum string return size
  *
  * @return		An error string.
  */
-define_function char[STRING_RETURN_SIZE_LIMIT] string_size_error()
+define_function char[1] string_size_error()
 {
     // handle, alert, ignore etc here
     println("'Maximum return size too small in String.axi'")
 
-    return 'error'
+    return ''
 }
 
 /**
@@ -413,9 +413,10 @@ define_function char[10] string_date_invert(char a[])
     return "comp[2], '/', comp[1], '/', comp[3]"
 }
 
+
 /**
  * Gets the first instance of a string contained within the bounds of two
- * substrings
+ * substrings case sensitive
  *
  * @param	a		a string to split
  * @param	left	the character sequence marking the left bound
@@ -425,22 +426,50 @@ define_function char[10] string_date_invert(char a[])
 define_function char[STRING_RETURN_SIZE_LIMIT] string_get_between(char a[],
 		char left[], char right[])
 {
+    return string_get_between_ex(a, left, right, true)
+}
+
+/**
+ * Gets the first instance of a string contained within the bounds of two
+ * substrings case insensitive
+ *
+ * @param	a		a string to split, max size is 100 kilobytes
+ * @param	left	the character sequence marking the left bound
+ * @param	right	the character sequence marking the right bound
+ * @return			a string contained within the boundary sequences
+ */
+define_function char[STRING_RETURN_SIZE_LIMIT] string_ci_get_between(char a[],
+		char left[], char right[])
+{
+	return string_get_between_ex(a, left, right, false)
+}
+
+/**
+ * Gets the first instance of a string contained within the bounds of two
+ * substrings case sensitive
+ *
+ * @param	a		a string to split
+ * @param	left	the character sequence marking the left bound
+ * @param	right	the character sequence marking the right bound
+ * @param	cs		TRUE for case sensitive search
+ * @return			a string contained within the boundary sequences
+ */
+define_function char[STRING_RETURN_SIZE_LIMIT] string_get_between_ex(char a[],
+		char left[], char right[], char cs)
+{
     stack_var integer start
     stack_var integer end
     stack_var integer retlen
 
-    start = find_string(a, left, 1)
-	if (start) {
-		start = start + length_string(left)
-	} else {
-		return ''
+    if(true == cs) {
+		start = find_string(a, left, 1) + length_string(left)
+		end = find_string(a, right, start)
 	}
-
-	end = find_string(a, right, start)
-    if (!end) {
-		return ''
+	else {
+		start = find_string(lower_string(a), lower_string(left), 1) + length_string(left)
+		end = find_string(lower_string(a), lower_string(right), start)
 	}
-
+    
 	retlen = end - start
 
     if (retlen > STRING_RETURN_SIZE_LIMIT) {
@@ -449,6 +478,7 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_get_between(char a[],
 
 	return mid_string(a, start, retlen)
 }
+
 
 
 /**
