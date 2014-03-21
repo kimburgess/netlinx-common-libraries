@@ -469,7 +469,7 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_get_between_ex(char a[],
 		start = find_string(lower_string(a), lower_string(left), 1) + length_string(left)
 		end = find_string(lower_string(a), lower_string(right), start)
 	}
-    
+
 	retlen = end - start
 
     if (retlen > STRING_RETURN_SIZE_LIMIT) {
