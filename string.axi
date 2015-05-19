@@ -76,7 +76,7 @@ define_function char[STRING_RETURN_SIZE_LIMIT] implode(char strings[][],
 						care about sanitizing ret[][]
  * @return				the amount of entries stuffed into ret[][]
  */
-define_function integer explode(char delim, char a[], char ret[][],
+define_function integer explode(char delim, char a[], char ret[][], 
 		integer ret_len)
 {
 	return explode_quoted(delim, a, ret, ret_len, 0)
@@ -658,7 +658,7 @@ define_function integer find_string_multi(char haystack[], char needles[][],
  * @return				'a' with all occurances of 'search' replaced by the
  *						contents of 'replace'
  */
-define_function char[STRING_RETURN_SIZE_LIMIT] string_replace(char a[],
+define_function char[STRING_RETURN_SIZE_LIMIT] string_replace(char a[], 
 		char search[], char replace[])
 {
 	stack_var integer start
@@ -708,6 +708,48 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_reverse(char a[])
 	set_length_string(ret, len);
 
 	return ret
+}
+
+
+/**
+ * Remove characters from the end of the string.
+ * 
+ * @param	a			the input string
+ * @param	count		the number of characters to remove
+ * @return				the contents of 'a' with the characters removed
+ */
+define_function char[STRING_RETURN_SIZE_LIMIT] strip_chars_right(char a[], 
+		integer count)
+{
+	return left_string(a, length_string(a) - count)
+}
+
+/**
+ * Wrapper method for mid_string to bring inline with other programming
+ * languages.
+ * 
+ * @param	a			the input string
+ * @param	start		the start location of the substring
+ * @param	count		the number of characters to extract
+ */
+define_function char[STRING_RETURN_SIZE_LIMIT] substr(char a[], integer start, 
+		integer count)
+{
+	return mid_string(a, start, count);
+}
+
+/**
+ * Alternative to substr which allows an end location to be specified instead of
+ * a count
+ *
+ * @param	a			the input string
+ * @param	start		the start location of the substring
+ * @param	end			the end location of the substring
+ */
+define_function char[STRING_RETURN_SIZE_LIMIT] substring(char a[], 
+		integer start, integer end)
+{
+	return substr(a, start, end-start);
 }
 
 #end_if
