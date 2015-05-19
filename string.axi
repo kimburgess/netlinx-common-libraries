@@ -752,4 +752,20 @@ define_function char[STRING_RETURN_SIZE_LIMIT] substring(char a[],
 	return substr(a, start, end-start);
 }
 
+define_function CHAR[STRING_RETURN_SIZE_LIMIT] pad_leading_chars(char a[], char pad, 
+		integer count)
+{
+	stack_var char ret[STRING_RETURN_SIZE_LIMIT]
+	
+	ret = a;
+	if (count == 0) {
+		return ''						// Emergency Exit
+	}
+	while(length_string(ret) <  count){ 
+		ret = "pad, ret" 
+	}
+	
+	return ret;
+}
+
 #end_if
