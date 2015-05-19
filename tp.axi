@@ -98,33 +98,42 @@ define_function update_button_fill(dev panel, integer btn, integer rgb[3]){
 	send_command panel, "'^BCF-',itoa(btn),',0,#',r,g,b,'FF'";
 }
 
-define_function position_fader_handle(dev tp, integer handleChannel, integer value, double max, integer faderHeight, integer left_offset, integer top_offset, integer handleWidth, integer handleHeight){
+define_function position_fader_handle(dev tp, integer handleChannel, integer value, 
+		double max_val, integer faderHeight, integer left_offset, integer top_offset, 
+		integer handleWidth, integer handleHeight){
 	stack_var double p_val;
 	stack_var double scaled_val;
 	stack_var integer y;
 	
-	p_val = ( max - value) / max;
+	p_val = ( max_val - value) / max_val;
 	scaled_val = round(faderHeight * p_val);
 	y = atoi(ftoa(top_offset + scaled_val - handleHeight/2));
 	
 	size_button(tp, "itoa(handleChannel)", left_offset, y, handleWidth, handleHeight);
 }
-define_function position_fader_handle_horizontal(dev tp, integer handleChannel, integer value, double max, integer faderWidth, integer left_offset, integer top_offset, integer handleWidth, integer handleHeight){
+
+define_function position_fader_handle_horizontal(dev tp, integer handleChannel, 
+		integer value, double max_val, integer faderWidth, integer left_offset, 
+		integer top_offset, integer handleWidth, integer handleHeight){
 	stack_var double p_val;
 	stack_var double scaled_val;
 	stack_var integer left;
 	
-	p_val = value / max;
+	p_val = value / max_val;
 	scaled_val = round(faderWidth * p_val);
 	left = atoi(ftoa(left_offset + scaled_val - handleWidth/2));
 	
 	size_button(tp, "itoa(handleChannel)", left, top_offset, handleWidth, handleHeight);
 }
-define_function position_fader_handle_inverse(dev tp, integer handleChannel, integer value, double max, integer faderHeight, integer left_offset, integer top_offset, integer handleWidth, integer handleHeight){
-	stack_var double p_val, scaled_val;
+
+define_function position_fader_handle_inverse(dev tp, integer handleChannel, integer value, 
+		double max_val, integer faderHeight, integer left_offset, integer top_offset, 
+		integer handleWidth, integer handleHeight){
+	stack_var double p_val;
+	stack_var double scaled_val;
 	stack_var integer y;
 	
-	p_val = value / max;
+	p_val = value / max_val;
 	scaled_val = round(faderHeight * p_val);
 	y = atoi(ftoa(top_offset + scaled_val - handleHeight/2));
 	
