@@ -336,4 +336,42 @@ define_function swap(integer list[], integer index1, integer index2)
 	}
 }
 
+/*
+ * Check if a value is within the integer array
+ *
+ * @param   list        array of integers
+ * @param   value       value to find in the array
+ *
+ * @return              position in the array, 0 if not found
+ */
+define_function integer in_array_int(integer value, integer list[])
+{
+    stack_var integer i;
+    
+    for(i = length_array(list); i; i--){
+        if(arr[i] == value)
+            return i;
+    }
+    return 0;
+}
+
+/*
+ * Check if a value is within the string array
+ *
+ * @param   arr        array of integers
+ * @param   item       string to find in the array
+ *
+ * @return              position in the array, 0 if not found
+ */
+define_function integer in_array_string(char item[], integer arr[])
+{
+    stack_var i;
+    
+    for(i = length_array(arr); i; i--){
+        if(arr[i] == item)
+            return i;
+    }
+    return 0;
+}
+
 #end_if
