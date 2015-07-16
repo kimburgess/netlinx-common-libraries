@@ -749,7 +749,7 @@ define_function char[STRING_RETURN_SIZE_LIMIT] substr(char a[], integer start,
 define_function char[STRING_RETURN_SIZE_LIMIT] substring(char a[], 
 		integer start, integer end)
 {
-	return substr(a, start, end-start);
+	return substr(a, start, end-start+1);
 }
 
 define_function CHAR[STRING_RETURN_SIZE_LIMIT] pad_leading_chars(char a[], char pad, 
