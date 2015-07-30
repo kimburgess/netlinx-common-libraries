@@ -260,7 +260,7 @@ define_function char[8] unixtime_to_netlinx_time(slong u)
  */
 define_function char[8] unixtime_to_netlinx_date(slong u)
 {
-	return fmt_date('m-d-y', u)
+	return fmt_date('m/d/y', u)
 }
 
 /**
@@ -271,7 +271,7 @@ define_function char[8] unixtime_to_netlinx_date(slong u)
  */
 define_function char[10] unixtime_to_netlinx_ldate(slong u)
 {
-	return fmt_date('m-d-Y', u)
+	return fmt_date('m/d/Y', u)
 }
 
 /**
