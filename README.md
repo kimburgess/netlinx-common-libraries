@@ -1,4 +1,4 @@
-﻿This project contains globally useful, portable includes for augmenting the base functionality of the proprietary AMX NetLinx language used for programming [AMX NetLinx integrated controllers](http://www.amx.com/products/categoryCentralControllers.asp).
+This project contains globally useful, portable includes for augmenting the base functionality of the proprietary AMX NetLinx language used for programming [AMX NetLinx integrated controllers](http://www.amx.com/products/categoryCentralControllers.asp).
 
 Currently the project provides a math library, string manipulation library, time and date library, array utils, a managed debug messaging library and an associated console output library.
 
@@ -14,6 +14,8 @@ Currently the project provides a math library, string manipulation library, time
 [Andy Dixon](https://github.com/PsyenceFact)
 
 [Motaz Abuthiab](mailto:moty66@gmail.com)
+
+[Vanti](https://www.vanti.co.uk)
 
 # Contributing
 
