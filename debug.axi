@@ -11,12 +11,16 @@ char DEBUG_OFF		= 0				// Available debug verbosity levels
 char DEBUG_ERROR 	= 1
 char DEBUG_WARN 	= 2
 char DEBUG_INFO 	= 3
+char DEBUG_DEBUG    = 4
 
-char DEBUG_LEVEL_STRINGS[4][16] = {
+char DEBUG_MAX_LEVEL = 4
+
+char DEBUG_LEVEL_STRINGS[5][16] = {
     'Off',
     'Error',
     'Warn',
-    'Info'
+    'Info',
+    'Debug'
 }
 
 
@@ -43,7 +47,7 @@ define_function char[5] debug_get_level_string(char x)
  */
 define_function debug_set_level(char x)
 {
-	if (x >= DEBUG_OFF && x <= DEBUG_INFO) {
+	if (x >= DEBUG_OFF && x <= DEBUG_MAX_LEVEL) {
 		println("'Debug level set to ', debug_get_level_string(x)")
 		debug_level = x
 	} else {
@@ -70,7 +74,7 @@ define_function debug_msg(char msg_level, char msg[])
 	stack_var char out[255];
 	stack_var char in[255];
 
-	if (msg_level < DEBUG_ERROR || msg_level > DEBUG_INFO) {
+	if (msg_level < DEBUG_ERROR || msg_level > DEBUG_MAX_LEVEL) {
 		debug_msg(DEBUG_ERROR, "'invalid debug level specified - ', msg")
 		return
 	}
@@ -108,7 +112,7 @@ define_function debug_hex(char msg_level, char msg[])
 	stack_var char out[255];
 	stack_var char in[255];
 	
-	if (msg_level < DEBUG_ERROR || msg_level > DEBUG_INFO) {
+	if (msg_level < DEBUG_ERROR || msg_level > DEBUG_MAX_LEVEL) {
 		debug_msg(DEBUG_ERROR, "'invalid debug level specified - ', msg")
 		return
 	}
@@ -136,7 +140,7 @@ define_function debug_dec(char msg_level, char msg[])
 	stack_var char c;
 	stack_var char in[255];
 	
-	if (msg_level < DEBUG_ERROR || msg_level > DEBUG_INFO) {
+	if (msg_level < DEBUG_ERROR || msg_level > DEBUG_MAX_LEVEL) {
 		debug_msg(DEBUG_ERROR, "'invalid debug level specified - ', msg")
 		return
 	}
