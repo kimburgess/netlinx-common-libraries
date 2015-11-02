@@ -40,6 +40,33 @@ define_function char[5] debug_get_level_string(char x)
 }
 
 /**
+ * Gets a numerical debug level based on it's equivalent string representation.
+ *
+ * @param	x		a character array containing the string to parse
+ * @return			a character containing the numerical debug level represented
+ *					by the content of x
+ */
+define_function char debug_get_level_from_string(char x[]) {
+	stack_var char lvl;
+	
+	if (length_string(x) == 1) {
+		lvl = atoi(x);
+		if (lvl > 4) {
+			lvl = DEBUG_OFF;
+		}
+	}
+	
+	for (lvl = length_array(DEBUG_LEVEL_STRINGS); lvl; lvl--) {
+		if (lower_string(x) == lower_string(DEBUG_LEVEL_STRINGS[lvl])) {
+			lvl = lvl - 1;
+			break;
+		}
+	}
+	
+	return lvl;
+}
+
+/**
  * Sets the current system debugging level for controlling debug message
  * verbosity.
  *

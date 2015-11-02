@@ -21,12 +21,12 @@ STRING_RETURN_SIZE_LIMIT	= 1024	// Maximum string return size
  *
  * @return		An error string.
  */
-define_function char[STRING_RETURN_SIZE_LIMIT] string_size_error()
+define_function char[1] string_size_error()
 {
     // handle, alert, ignore etc here
     println("'Maximum return size too small in String.axi'")
 
-    return 'error'
+    return ''
 }
 
 /**
@@ -76,7 +76,7 @@ define_function char[STRING_RETURN_SIZE_LIMIT] implode(char strings[][],
 						care about sanitizing ret[][]
  * @return				the amount of entries stuffed into ret[][]
  */
-define_function integer explode(char delim, char a[], char ret[][], 
+define_function integer explode(char delim, char a[], char ret[][],
 		integer ret_len)
 {
 	return explode_quoted(delim, a, ret, ret_len, 0)
@@ -413,9 +413,10 @@ define_function char[10] string_date_invert(char a[])
     return "comp[2], '/', comp[1], '/', comp[3]"
 }
 
+
 /**
  * Gets the first instance of a string contained within the bounds of two
- * substrings
+ * substrings case sensitive
  *
  * @param	a		a string to split
  * @param	left	the character sequence marking the left bound
@@ -425,20 +426,48 @@ define_function char[10] string_date_invert(char a[])
 define_function char[STRING_RETURN_SIZE_LIMIT] string_get_between(char a[],
 		char left[], char right[])
 {
+    return string_get_between_ex(a, left, right, true)
+}
+
+/**
+ * Gets the first instance of a string contained within the bounds of two
+ * substrings case insensitive
+ *
+ * @param	a		a string to split, max size is 100 kilobytes
+ * @param	left	the character sequence marking the left bound
+ * @param	right	the character sequence marking the right bound
+ * @return			a string contained within the boundary sequences
+ */
+define_function char[STRING_RETURN_SIZE_LIMIT] string_ci_get_between(char a[],
+		char left[], char right[])
+{
+	return string_get_between_ex(a, left, right, false)
+}
+
+/**
+ * Gets the first instance of a string contained within the bounds of two
+ * substrings case sensitive
+ *
+ * @param	a		a string to split
+ * @param	left	the character sequence marking the left bound
+ * @param	right	the character sequence marking the right bound
+ * @param	cs		TRUE for case sensitive search
+ * @return			a string contained within the boundary sequences
+ */
+define_function char[STRING_RETURN_SIZE_LIMIT] string_get_between_ex(char a[],
+		char left[], char right[], char cs)
+{
     stack_var integer start
     stack_var integer end
     stack_var integer retlen
 
-    start = find_string(a, left, 1)
-	if (start) {
-		start = start + length_string(left)
-	} else {
-		return ''
+    if(true == cs) {
+		start = find_string(a, left, 1) + length_string(left)
+		end = find_string(a, right, start)
 	}
-
-	end = find_string(a, right, start)
-    if (!end) {
-		return ''
+	else {
+		start = find_string(lower_string(a), lower_string(left), 1) + length_string(left)
+		end = find_string(lower_string(a), lower_string(right), start)
 	}
 
 	retlen = end - start
@@ -449,6 +478,7 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_get_between(char a[],
 
 	return mid_string(a, start, retlen)
 }
+
 
 
 /**
@@ -567,6 +597,46 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_suffix_to_length(
 }
 
 /**
+ * Returns a string truncated to a specific length. If the string is less than
+ * the length specified the original string is returned. If it is truncated an
+ * elipsis will be appended.
+ *
+ * @param	a		the string to truncate
+ * @param	len		the requested length of the string
+ * @return			a string truncated to a maximum len characters
+ */
+define_function char[STRING_RETURN_SIZE_LIMIT] string_truncate(char a[],
+		integer len)
+{
+	return string_truncate_ex(a, "$85", len)
+}
+
+/**
+ * Returns a string truncated to a specific length. If the string is less than
+ * the length specified the original string is return. If it is truncated to
+ * contents of value is appended to the truncated string.
+ *
+ * @param	a		the string to truncate
+ * @param	value	the value to suffix on the string if truncated
+ * @param	len		the requested length of the string
+ * @return			a string truncated to a maximum len characters
+ */
+define_function char[STRING_RETURN_SIZE_LIMIT] string_truncate_ex(char a[],
+		char value[], integer len)
+{
+	if (len > STRING_RETURN_SIZE_LIMIT ||
+			length_string(a) > STRING_RETURN_SIZE_LIMIT) {
+		return string_size_error()
+	}
+
+	if (length_string(a) > len) {
+		return "left_string(a, len - length_string(value)), value"
+	} else {
+		return a
+	}
+}
+
+/**
  * Returns the left substring of a string up to the specified number of
  * characters.
  * WARNING: this is a destructive removal - the returned substring will be
@@ -658,7 +728,7 @@ define_function integer find_string_multi(char haystack[], char needles[][],
  * @return				'a' with all occurances of 'search' replaced by the
  *						contents of 'replace'
  */
-define_function char[STRING_RETURN_SIZE_LIMIT] string_replace(char a[], 
+define_function char[STRING_RETURN_SIZE_LIMIT] string_replace(char a[],
 		char search[], char replace[])
 {
 	stack_var integer start
@@ -710,15 +780,39 @@ define_function char[STRING_RETURN_SIZE_LIMIT] string_reverse(char a[])
 	return ret
 }
 
+/**
+ * Check is a string starts with another string.
+ *
+ * @param	a			the string to check
+ * @param	search		the substring to search for
+ * @return				a boolean, true if 'a' begins with 'search'
+ */
+define_function char string_starts_with(char a[], char search[])
+{
+	return left_string(a, length_string(search)) == search;
+}
+
+/**
+ * Check is a string end with another string.
+ *
+ * @param	a			the string to check
+ * @param	search		the substring to search for
+ * @return				a boolean, true if 'a' ends with 'search'
+ */
+define_function char string_ends_with(char a[], char search[])
+{
+	return right_string(a, length_string(search)) == search;
+}
+
 
 /**
  * Remove characters from the end of the string.
- * 
+ *
  * @param	a			the input string
  * @param	count		the number of characters to remove
  * @return				the contents of 'a' with the characters removed
  */
-define_function char[STRING_RETURN_SIZE_LIMIT] strip_chars_right(char a[], 
+define_function char[STRING_RETURN_SIZE_LIMIT] strip_chars_right(char a[],
 		integer count)
 {
 	return left_string(a, length_string(a) - count)
@@ -727,12 +821,12 @@ define_function char[STRING_RETURN_SIZE_LIMIT] strip_chars_right(char a[],
 /**
  * Wrapper method for mid_string to bring inline with other programming
  * languages.
- * 
+ *
  * @param	a			the input string
  * @param	start		the start location of the substring
  * @param	count		the number of characters to extract
  */
-define_function char[STRING_RETURN_SIZE_LIMIT] substr(char a[], integer start, 
+define_function char[STRING_RETURN_SIZE_LIMIT] substr(char a[], integer start,
 		integer count)
 {
 	return mid_string(a, start, count);
@@ -746,25 +840,25 @@ define_function char[STRING_RETURN_SIZE_LIMIT] substr(char a[], integer start,
  * @param	start		the start location of the substring
  * @param	end			the end location of the substring
  */
-define_function char[STRING_RETURN_SIZE_LIMIT] substring(char a[], 
+define_function char[STRING_RETURN_SIZE_LIMIT] substring(char a[],
 		integer start, integer end)
 {
 	return substr(a, start, end-start+1);
 }
 
-define_function CHAR[STRING_RETURN_SIZE_LIMIT] pad_leading_chars(char a[], char pad, 
+define_function CHAR[STRING_RETURN_SIZE_LIMIT] pad_leading_chars(char a[], char pad,
 		integer count)
 {
 	stack_var char ret[STRING_RETURN_SIZE_LIMIT]
-	
+
 	ret = a;
 	if (count == 0) {
 		return ''						// Emergency Exit
 	}
-	while(length_string(ret) <  count){ 
-		ret = "pad, ret" 
+	while(length_string(ret) <  count){
+		ret = "pad, ret"
 	}
-	
+
 	return ret;
 }
 

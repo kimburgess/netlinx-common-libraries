@@ -1,4 +1,4 @@
-program_name='ncl'
+program_name='netlinx-common-libraries'
 
 include 'io'
 include 'debug'
@@ -7,4 +7,3 @@ include 'string'
 include 'math'
 include 'unixtime'
 include 'graph'
-include 'tp'
