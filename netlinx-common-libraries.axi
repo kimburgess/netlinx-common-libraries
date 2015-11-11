@@ -1,4 +1,4 @@
-program_name='ncl'
+program_name='netlinx-common-libraries'
 
 include 'io'
 include 'debug'

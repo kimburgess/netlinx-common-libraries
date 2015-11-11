@@ -35,6 +35,20 @@ define_function long math_raw_be_to_long(char x[4])
 }
 
 /**
+ * Load 4 bytes of little endian data contained in a character array into a long.
+ *
+ * Note: Array position 4 should contain MSB / position 1 should contain LSB
+ *
+ * @param	x		a 4 byte character array containg the data to load
+ * @return			a long filled with the passed data
+ */
+define_function long math_raw_le_to_long(char x[4])
+{
+    return x[4] << 24 + x[3] << 16 + x[2] << 8 + x[1]
+}
+
+
+/**
  * Load a float value's IEEE 754 bit pattern into a long.
  *
  * @param	x		the float to load
